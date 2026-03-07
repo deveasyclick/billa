@@ -1,0 +1,63 @@
+{
+  "name": "@deveasyclick/billpay",
+  "version": "0.1.0",
+  "description": "Framework-agnostic Node.js SDK for bill payment processing with automatic provider failover",
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsc --project tsconfig.json",
+    "prepublishOnly": "npm run build",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint src --ext .ts",
+    "type-check": "tsc --noEmit"
+  },
+  "keywords": [
+    "billpay",
+    "payment",
+    "interswitch",
+    "vtpass",
+    "airtime",
+    "data",
+    "electricity",
+    "tv",
+    "gaming",
+    "Nigeria",
+    "failover"
+  ],
+  "author": "deveasyclick",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/deveasyclick/billpay-sdk.git"
+  },
+  "bugs": {
+    "url": "https://github.com/deveasyclick/billpay-sdk/issues"
+  },
+  "homepage": "https://github.com/deveasyclick/billpay-sdk#readme",
+  "dependencies": {
+    "axios": "^1.6.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.0.0",
+    "typescript": "^5.0.0",
+    "eslint": "^8.0.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0"
+  },
+  "engines": {
+    "node": ">=16.0.0",
+    "npm": ">=8.0.0"
+  }
+}
