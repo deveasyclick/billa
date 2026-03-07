@@ -1,6 +1,6 @@
-import type { BillerItem } from '../types/biller-item';
-import type { PayResponse } from '../types/interswitch';
-import type { Customer } from '../types/interswitch-customer';
+import type { BillerItem } from "../types/biller-item";
+import type { PayResponse } from "../types/interswitch";
+import type { Customer } from "../types/interswitch";
 
 export interface IBillPaymentProvider {
   executePayment(

@@ -1,5 +1,5 @@
-export type { BillerItem } from './biller-item';
-export type { PayObject, ProviderResult } from './payment';
+export type { BillerItem } from "./biller-item";
+export type { PayObject, ProviderResult } from "./payment";
 export type {
   BillCategory,
   VTPassVariation,
@@ -20,8 +20,8 @@ export type {
   VTPassBuyElectricityPayload,
   PayWithVtPassPayload,
   VTPassPayPayload,
-} from './vtpass';
-export type { Customer } from './interswitch-customer';
+} from "./vtpass";
+export type { Customer } from "./interswitch";
 export type {
   Category,
   Biller,
@@ -35,4 +35,4 @@ export type {
   ConfirmCardPaymentResponse,
   TransactionResponse,
   ConfirmTransactionResponse,
-} from './interswitch';
+} from "./interswitch";

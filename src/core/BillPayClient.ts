@@ -1,32 +1,24 @@
-import type { BillerItem } from '../common/types/biller-item';
-import type { PayResponse, Customer } from '../common/types/interswitch';
-import type { BillCategory } from '../common/types/vtpass';
-import { InterSwitchService, type InterSwitchConfig } from '../integration/interswitch/interswitch.service';
-import { VTPassService, type VTPassConfig } from '../integration/vtpass/vtpass.service';
-import { BillPaymentProviderFactory, type ProviderType } from '../providers/bill-payment-provider.factory';
-
-export interface IBillPaymentProvider {
-  executePayment(
-    item: BillerItem,
-    payment: {
-      reference: string;
-      amount: number;
-      customerId?: string;
-      plan?: string;
-      id?: string;
-    },
-  ): Promise<PayResponse>;
-
-  validateCustomer(
-    customerId: string,
-    paymentCode: string,
-    type?: string,
-  ): Promise<Customer>;
-}
+import type { BillerItem } from "../common/types/biller-item";
+import type { PayResponse, Customer } from "../common/types/interswitch";
+import type { BillCategory } from "../common/types/vtpass";
+import {
+  InterSwitchService,
+  type InterSwitchConfig,
+} from "../integration/interswitch/interswitch.service";
+import {
+  VTPassService,
+  type VTPassConfig,
+} from "../integration/vtpass/vtpass.service";
+import {
+  BillPaymentProviderFactory,
+  type ProviderType,
+} from "../providers/bill-payment-provider.factory";
 
 export interface BillPayClientConfig {
-  interswitch: InterSwitchConfig;
-  vtpass: VTPassConfig;
+  /** configuration for the InterSwitch service; omit to disable that provider */
+  interswitch?: InterSwitchConfig;
+  /** configuration for the VTPass service; omit to disable that provider */
+  vtpass?: VTPassConfig;
 }
 
 export interface PayRequest {
@@ -47,19 +39,41 @@ export interface ValidateCustomerRequest {
 }
 
 export class BillPayClient {
-  private readonly interswitchService: InterSwitchService;
-  private readonly vtpassService: VTPassService;
+  private readonly interswitchService?: InterSwitchService;
+  private readonly vtpassService?: VTPassService;
   private readonly factory: BillPaymentProviderFactory;
-  private primaryProvider: ProviderType = 'INTERSWITCH';
-  private fallbackProvider: ProviderType | null = 'VTPASS';
+  private primaryProvider: ProviderType;
+  private fallbackProvider: ProviderType | null;
 
   constructor(config: BillPayClientConfig) {
-    this.interswitchService = new InterSwitchService(config.interswitch);
-    this.vtpassService = new VTPassService(config.vtpass);
+    // ensure at least one provider is supplied
+    if (!config.interswitch && !config.vtpass) {
+      throw new Error(
+        "BillPayClient requires at least one of interswitch or vtpass configuration",
+      );
+    }
+
+    if (config.interswitch) {
+      this.interswitchService = new InterSwitchService(config.interswitch);
+    }
+    if (config.vtpass) {
+      this.vtpassService = new VTPassService(config.vtpass);
+    }
+
     this.factory = new BillPaymentProviderFactory(
       this.interswitchService,
       this.vtpassService,
     );
+
+    // default provider preference: first available provider becomes primary
+    if (this.interswitchService) {
+      this.primaryProvider = "INTERSWITCH";
+      this.fallbackProvider = this.vtpassService ? "VTPASS" : null;
+    } else {
+      // must have vtpassService because of earlier check
+      this.primaryProvider = "VTPASS";
+      this.fallbackProvider = null;
+    }
   }
 
   /**
@@ -69,6 +83,22 @@ export class BillPayClient {
     primary: ProviderType,
     fallback?: ProviderType | null,
   ): void {
+    // validate requested providers are configured
+    if (primary === "INTERSWITCH" && !this.interswitchService) {
+      throw new Error("INTERSWITCH provider is not configured");
+    }
+    if (primary === "VTPASS" && !this.vtpassService) {
+      throw new Error("VTPASS provider is not configured");
+    }
+    if (fallback) {
+      if (fallback === "INTERSWITCH" && !this.interswitchService) {
+        throw new Error("INTERSWITCH provider is not configured");
+      }
+      if (fallback === "VTPASS" && !this.vtpassService) {
+        throw new Error("VTPASS provider is not configured");
+      }
+    }
+
     this.primaryProvider = primary;
     this.fallbackProvider = fallback ?? null;
   }
@@ -76,7 +106,10 @@ export class BillPayClient {
   /**
    * Get the active provider preferences
    */
-  getActiveProviders(): { primary: ProviderType; fallback: ProviderType | null } {
+  getActiveProviders(): {
+    primary: ProviderType;
+    fallback: ProviderType | null;
+  } {
     return {
       primary: this.primaryProvider,
       fallback: this.fallbackProvider,
@@ -87,13 +120,27 @@ export class BillPayClient {
    * Pay a bill with automatic fallback to secondary provider on failure
    */
   async pay(request: PayRequest): Promise<PayResponse> {
-    const providersToTry: ProviderType[] = [
-      request.provider ?? this.primaryProvider,
-    ];
+    // determine which provider(s) we will attempt
+    const providerOverride = request.provider;
+    const providersToTry: ProviderType[] = [];
 
-    // Add fallback provider if configured and different from primary
-    if (this.fallbackProvider && providersToTry[0] !== this.fallbackProvider) {
-      providersToTry.push(this.fallbackProvider);
+    if (providerOverride) {
+      // ensure override is available
+      if (providerOverride === "INTERSWITCH" && !this.interswitchService) {
+        throw new Error("INTERSWITCH provider is not configured");
+      }
+      if (providerOverride === "VTPASS" && !this.vtpassService) {
+        throw new Error("VTPASS provider is not configured");
+      }
+      providersToTry.push(providerOverride);
+    } else {
+      providersToTry.push(this.primaryProvider);
+      if (
+        this.fallbackProvider &&
+        this.fallbackProvider !== this.primaryProvider
+      ) {
+        providersToTry.push(this.fallbackProvider);
+      }
     }
 
     return this.tryProviders(providersToTry, request);
@@ -102,10 +149,17 @@ export class BillPayClient {
   /**
    * Validate customer information
    */
-  async validateCustomer(
-    request: ValidateCustomerRequest,
-  ): Promise<Customer> {
+  async validateCustomer(request: ValidateCustomerRequest): Promise<Customer> {
     const provider = request.provider ?? this.primaryProvider;
+
+    // ensure provider is configured
+    if (provider === "INTERSWITCH" && !this.interswitchService) {
+      throw new Error("INTERSWITCH provider is not configured");
+    }
+    if (provider === "VTPASS" && !this.vtpassService) {
+      throw new Error("VTPASS provider is not configured");
+    }
+
     const providerInstance = this.factory.getProvider(provider);
     return providerInstance.validateCustomer(
       request.customerId,
@@ -122,43 +176,44 @@ export class BillPayClient {
    */
   async getPlans(
     category?: BillCategory,
-    provider?: ProviderType | 'BOTH',
+    provider?: ProviderType | "BOTH",
   ): Promise<BillerItem[]> {
     const targetProvider = provider ?? this.primaryProvider;
 
-    if (targetProvider === 'BOTH') {
-      // Fetch and combine plans from both providers
-      const [interswitchPlans, vtpassPlans] = await Promise.all([
-        this.interswitchService.findPlans(),
-        this.vtpassService.getPlans(),
-      ]);
-      const allPlans = [...interswitchPlans, ...vtpassPlans];
+    // helper to filter categories
+    const filterCategory = (plans: BillerItem[]) =>
+      category
+        ? plans.filter(
+            (p) => p.category.toUpperCase() === category.toUpperCase(),
+          )
+        : plans;
 
-      if (category) {
-        return allPlans.filter(
-          (plan) => plan.category.toUpperCase() === category.toUpperCase(),
-        );
+    if (targetProvider === "BOTH") {
+      // return whatever providers are available
+      const results: BillerItem[][] = [];
+      if (this.interswitchService) {
+        results.push(await this.interswitchService.findPlans());
       }
-
-      return allPlans;
+      if (this.vtpassService) {
+        results.push(await this.vtpassService.getPlans());
+      }
+      const allPlans = results.flat();
+      return filterCategory(allPlans);
     }
 
-    // Fetch plans from specific provider
-    let plans: BillerItem[];
-    if (targetProvider === 'INTERSWITCH') {
-      plans = await this.interswitchService.findPlans();
-    } else {
-      plans = await this.vtpassService.getPlans();
+    // provider-specific path
+    if (targetProvider === "INTERSWITCH") {
+      if (!this.interswitchService) {
+        throw new Error("INTERSWITCH provider is not configured");
+      }
+      return filterCategory(await this.interswitchService.findPlans());
     }
 
-    // Filter by category if specified
-    if (category) {
-      return plans.filter(
-        (plan) => plan.category.toUpperCase() === category.toUpperCase(),
-      );
+    // VTPASS
+    if (!this.vtpassService) {
+      throw new Error("VTPASS provider is not configured");
     }
-
-    return plans;
+    return filterCategory(await this.vtpassService.getPlans());
   }
 
   /**

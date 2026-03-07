@@ -12,11 +12,15 @@ npm install @deveasyclick/billpay
 
 ### 1. Create a BillPay Module
 
+You can provide both providers (the default) or only one if you only intend to
+use a single backend.  Alternatively you can instantiate one of the
+specialised clients (`InterswitchClient`/`VtpassClient`) directly.
+
 Create `src/modules/billpay/billpay.module.ts`:
 
 ```typescript
 import { Module } from '@nestjs/common';
-import { BillPayClient } from '@deveasyclick/billpay';
+import { BillPayClient, InterswitchClient, VtpassClient } from '@deveasyclick/billpay';
 import { BillPayService } from './billpay.service';
 import { BillPayResolver } from './billpay.resolver';
 
@@ -26,6 +30,7 @@ import { BillPayResolver } from './billpay.resolver';
       provide: BillPayClient,
       useFactory: () => {
         return new BillPayClient({
+          // omit one of these sections if you want to run with a single provider
           interswitch: {
             clientId: process.env.INTERSWITCH_CLIENT_ID!,
             secretKey: process.env.INTERSWITCH_SECRET_KEY!,
@@ -54,6 +59,11 @@ export class BillPayModule {}
 ```
 
 ### 2. Create a BillPay Service
+
+> **Tip:** if you only configured one provider you could instead inject the
+> specific client directly (e.g. `InterswitchClient`), the service code would
+> look almost identical because the public methods are the same.
+
 
 Create `src/modules/billpay/billpay.service.ts`:
 

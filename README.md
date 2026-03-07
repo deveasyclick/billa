@@ -6,6 +6,7 @@ A framework-agnostic Node.js SDK for bill payment processing with automatic prov
 
 - 🔄 **Automatic Failover**: Automatically switches to fallback provider on primary failure
 - 🏭 **Multiple Providers**: Support for InterSwitch and VTPass payment providers
+- 🎯 **Single‑provider clients**: You can now instantiate `InterswitchClient` or `VtpassClient`, or supply only one provider to `BillPayClient`
 - 📱 **Comprehensive Coverage**: Airtime, Data, TV subscriptions, Electricity, and Gaming
 - 🚀 **Framework-Agnostic**: Works with Express, Fastify, NestJS, or any Node.js framework
 - 💾 **Stateless**: No database dependencies, SDK is entirely stateless
@@ -25,8 +26,9 @@ pnpm add @deveasyclick/billpay
 ## Quick Start
 
 ```typescript
-import { BillPayClient } from '@deveasyclick/billpay';
+import { BillPayClient, InterswitchClient, VtpassClient } from '@deveasyclick/billpay';
 
+// full configuration with both providers
 const client = new BillPayClient({
   interswitch: {
     clientId: 'your-client-id',
@@ -43,6 +45,22 @@ const client = new BillPayClient({
     publicKey: 'your-public-key',
   },
 });
+
+// or init with only one provider (InterSwitch example)
+const interswitchOnly = new InterswitchClient({
+  interswitch: {
+    clientId: 'your-client-id',
+    secretKey: 'your-secret-key',
+    terminalId: 'your-terminal-id',
+    apiBaseUrl: 'https://sandbox.quickteller.com',
+    authUrl: 'https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken',
+    paymentReferencePrefix: 'BPY_',
+  },
+});
+
+// vtpass-only client is similar:
+// const vtpassOnly = new VtpassClient({ vtpass: { ... } });
+
 
 // Set provider preference (primary and fallback)
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
@@ -79,7 +97,37 @@ console.log('Customer:', customer);
 
 ### BillPayClient
 
-Main client class for bill payment operations.
+Main client class for bill payment operations.  Accepts both `interswitch` and/or
+`vtpass` configuration; at least one must be supplied.  When only a single
+provider is configured the client behaves like the corresponding
+`InterswitchClient`/`VtpassClient` and provider overrides are disallowed.
+
+### InterswitchClient
+
+Convenience wrapper that is pre‑configured to use InterSwitch only.  This class
+exposes the same `getPlans`, `pay` and `validateCustomer` methods as
+`BillPayClient` but does not accept a provider override.  Instantiate with:
+
+```ts
+import { InterswitchClient } from '@deveasyclick/billpay';
+
+const client = new InterswitchClient({
+  interswitch: { /* config */ },
+});
+```
+
+### VtpassClient
+
+Same as `InterswitchClient` but for the VTPass provider.  Use when your
+application only interacts with VTPass:
+
+```ts
+import { VtpassClient } from '@deveasyclick/billpay';
+
+const client = new VtpassClient({
+  vtpass: { /* config */ },
+});
+```
 
 #### Constructor
 
@@ -111,7 +159,10 @@ const { primary, fallback } = client.getActiveProviders();
 
 ##### `getPlans(category?: BillCategory, provider?: ProviderType | 'BOTH'): Promise<BillerItem[]>`
 
-Fetch available billing plans.
+Fetch available billing plans.  When using `BillPayClient` with only one provider, the
+`provider` argument is ignored since there is only a single source.  Both
+`InterswitchClient` and `VtpassClient` expose the same method but without the
+`provider` argument.
 
 **Parameters:**
 - `category`: Optional category filter ('AIRTIME', 'DATA', 'TV', 'ELECTRICITY', 'GAMING')
@@ -130,7 +181,11 @@ const vtpassPlans = await client.getPlans(undefined, 'VTPASS');
 
 ##### `pay(request: PayRequest): Promise<PayResponse>`
 
-Execute a bill payment with automatic failover.
+Execute a bill payment with automatic failover.  When you create a single‑provider
+client, failover logic is obviously disabled and the underlying provider is used
+directly.  You can still override the provider for a specific transaction when
+using `BillPayClient` by specifying the `provider` field; doing so on a
+single‑provider client will throw an error.
 
 **Request Parameters:**
 - `billingItemId`: ID of the billing item
@@ -153,7 +208,9 @@ Execute a bill payment with automatic failover.
 
 ##### `validateCustomer(request: ValidateCustomerRequest): Promise<Customer>`
 
-Validate a customer before payment.
+Validate a customer before payment.  The `provider` option behaves exactly as it
+does for `pay()` (ignored when only one provider is configured, validated
+otherwise).
 
 **Parameters:**
 - `customerId`: Customer identifier
@@ -173,7 +230,9 @@ Validate a customer before payment.
 
 ## Fallback Behavior
 
-When you call `pay()`, the SDK automatically tries the primary provider first. If it fails, it attempts the fallback provider (if configured):
+When you call `pay()` using `BillPayClient` with two providers, the SDK
+automatically tries the primary provider first. If it fails, it attempts the
+fallback provider (if configured):
 
 ```typescript
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
@@ -196,7 +255,8 @@ const result = await client.pay({
 
 The SDK throws errors when:
 - All providers fail (with the last error message)
-- Configuration is invalid
+- Configuration is invalid (e.g. you construct `BillPayClient` without any provider)
+- You attempt to use a provider that wasn’t configured (e.g. `client.pay({..., provider: 'VTPASS' })` on an InterSwitch-only client)
 - Invalid provider name is used
 - Network/API errors occur
 

@@ -1,11 +1,11 @@
 // Core client
-export { BillPayClient } from './core/BillPayClient';
+export { BillPayClient } from "./core/BillPayClient";
 export type {
   BillPayClientConfig,
   PayRequest,
   ValidateCustomerRequest,
-  IBillPaymentProvider,
-} from './core';
+} from "./core";
+export type { IBillPaymentProvider } from "./common/interfaces/bill-payment-provider";
 
 // Common types and utilities
 export type {
@@ -44,28 +44,34 @@ export type {
   ConfirmCardPaymentResponse,
   TransactionResponse,
   ConfirmTransactionResponse,
-} from './common/types';
+} from "./common/types";
 
 export {
   SUPPORTED_BILLERS,
   SUPPORTED_ELECTRICITY_PROVIDERS,
   SUPPORTED_BILL_ITEMS,
-} from './common/constants/biller';
+} from "./common/constants/biller";
 
 export {
   getStaticInternalCode,
   isStaticCategory,
-} from './common/utils/static-codes';
+} from "./common/utils/static-codes";
 
-// Provider implementations  
-export { BillPaymentProviderFactory } from './providers/bill-payment-provider.factory';
-export type { ProviderType } from './providers/bill-payment-provider.factory';
-export { InterswitchProvider } from './providers/interswitch.provider';
-export { VTPassProvider } from './providers/vtpass.provider';
+// Provider implementations
+export { BillPaymentProviderFactory } from "./providers/bill-payment-provider.factory";
+export type { ProviderType } from "./providers/bill-payment-provider.factory";
+export { InterswitchProvider } from "./providers/interswitch.provider";
+export { VTPassProvider } from "./providers/vtpass.provider";
+
+// single-provider clients
+export type { InterswitchClientConfig } from "./core/InterswitchClient";
+export { InterswitchClient } from "./core/InterswitchClient";
+export type { VtpassClientConfig } from "./core/VtpassClient";
+export { VtpassClient } from "./core/VtpassClient";
 
 // Integration services
-export { InterSwitchService } from './integration/interswitch/interswitch.service';
-export type { InterSwitchConfig } from './integration/interswitch/interswitch.service';
-export { VTPassService } from './integration/vtpass/vtpass.service';
-export type { VTPassConfig } from './integration/vtpass/vtpass.service';
-export { STATIC_BILL_ITEMS } from './integration/vtpass/vtpass.constants';
+export { InterSwitchService } from "./integration/interswitch/interswitch.service";
+export type { InterSwitchConfig } from "./integration/interswitch/interswitch.service";
+export { VTPassService } from "./integration/vtpass/vtpass.service";
+export type { VTPassConfig } from "./integration/vtpass/vtpass.service";
+export { STATIC_BILL_ITEMS } from "./integration/vtpass/vtpass.constants";

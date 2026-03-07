@@ -1,4 +1,4 @@
-import type { BillCategory } from '../common/types/vtpass';
+import type { BillCategory } from "../../common/types/vtpass";
 import type {
   GetVTPassCategoryResponse,
   GetVTPassServiceResponse,
@@ -9,12 +9,15 @@ import type {
   VTPassValidateCustomerResponse,
   VTPassVerifyCustomerPayload,
   VTPassVerifyMeterNoPayload,
-} from '../common/types/vtpass';
-import type { BillerItem } from '../common/types/biller-item';
-import { getStaticInternalCode, isStaticCategory } from '../common/utils/static-codes';
-import { SUPPORTED_BILLERS } from '../common/constants/biller';
-import axios, { AxiosInstance } from 'axios';
-import { STATIC_BILL_ITEMS } from './vtpass.constants';
+} from "../../common/types/vtpass";
+import type { BillerItem } from "../../common/types/biller-item";
+import {
+  getStaticInternalCode,
+  isStaticCategory,
+} from "../../common/utils/static-codes";
+import { SUPPORTED_BILLERS } from "../../common/constants/biller";
+import axios, { AxiosInstance } from "axios";
+import { STATIC_BILL_ITEMS } from "./vtpass.constants";
 
 export interface VTPassConfig {
   apiKey: string;
@@ -43,7 +46,7 @@ export class VTPassService {
       },
     );
 
-    if (!data?.response_description || data.response_description !== '000') {
+    if (!data?.response_description || data.response_description !== "000") {
       throw new Error(
         `Failed to get categories: ${data?.response_description}`,
       );
@@ -52,9 +55,7 @@ export class VTPassService {
     return data;
   }
 
-  async getServices(
-    category: string,
-  ): Promise<GetVTPassServiceResponse> {
+  async getServices(category: string): Promise<GetVTPassServiceResponse> {
     const { data } = await this.httpClient.get<GetVTPassServiceResponse>(
       `${this.config.apiBaseUrl}/services?identifier=${category}`,
       {
@@ -64,7 +65,7 @@ export class VTPassService {
       },
     );
 
-    if (!data?.response_description || data.response_description !== '000') {
+    if (!data?.response_description || data.response_description !== "000") {
       throw new Error(
         `Failed to get services for category ${category}: ${data?.response_description}`,
       );
@@ -75,7 +76,7 @@ export class VTPassService {
 
   async getServiceVariants(
     serviceId: string,
-  ): Promise<GetVTPassVariationsResponse['content']['variations']> {
+  ): Promise<GetVTPassVariationsResponse["content"]["variations"]> {
     const { data } = await this.httpClient.get<GetVTPassVariationsResponse>(
       `${this.config.apiBaseUrl}/service-variations?serviceID=${serviceId}`,
       {
@@ -85,7 +86,7 @@ export class VTPassService {
       },
     );
 
-    if (!data?.response_description || data.response_description !== '000') {
+    if (!data?.response_description || data.response_description !== "000") {
       throw new Error(
         `Failed to get service variations for ${serviceId}: ${data?.response_description}`,
       );
@@ -102,16 +103,18 @@ export class VTPassService {
 
   async getDynamicPlans(): Promise<BillerItem[]> {
     const dynamicServices = STATIC_BILL_ITEMS.filter(
-      (item) => item.category === 'DATA' || item.category === 'TV',
+      (item) => item.category === "DATA" || item.category === "TV",
     );
 
     const results = await Promise.allSettled(
-      dynamicServices.map(async (service) => {
-        const provider = service.providers.find((p) => p.name === 'VTPASS');
+      dynamicServices.map(async (service: any) => {
+        const provider = service.providers.find(
+          (p: any) => p.name === "VTPASS",
+        );
         if (!provider) return [];
 
         const variations = await this.getServiceVariants(provider.billerId);
-        return variations.map((variant) => ({
+        return variations.map((variant: any) => ({
           internalCode: this.getInternalCode(
             service.name,
             service.category,
@@ -119,7 +122,7 @@ export class VTPassService {
           ),
           category: service.category,
           billerName: service.name,
-          provider: 'VTPASS',
+          provider: "VTPASS",
           billerId: provider.billerId,
           paymentCode: variant.variation_code,
           name: variant.name,
@@ -132,7 +135,7 @@ export class VTPassService {
     );
 
     const items = results
-      .filter((r) => r.status === 'fulfilled')
+      .filter((r) => r.status === "fulfilled")
       .flatMap((r) => (r as PromiseFulfilledResult<BillerItem[]>).value);
 
     return items;
@@ -143,25 +146,21 @@ export class VTPassService {
 
     // Select only non-dynamic categories (e.g., airtime, electricity, etc.)
     const staticServices = STATIC_BILL_ITEMS.filter(
-      (item) => item.category !== 'DATA' && item.category !== 'TV',
+      (item: any) => item.category !== "DATA" && item.category !== "TV",
     );
 
     for (const service of staticServices) {
-      const provider = service.providers.find((p) => p.name === 'VTPASS');
+      const provider = service.providers.find((p: any) => p.name === "VTPASS");
       if (!provider) continue;
 
       items.push({
-        internalCode: this.getInternalCode(
-          service.name,
-          service.category,
-          0,
-        ),
+        internalCode: this.getInternalCode(service.name, service.category, 0),
         category: service.category,
         billerName: service.name,
-        provider: 'VTPASS',
+        provider: "VTPASS",
         billerId: provider.billerId,
         paymentCode:
-          service.category === 'ELECTRICITY' ? 'prepaid' : provider.billerId,
+          service.category === "ELECTRICITY" ? "prepaid" : provider.billerId,
         name: service.name,
         amount: 0, // Amount entered by user (e.g. airtime or electricity)
         amountType: 0, // 0 means fixed amount
@@ -175,7 +174,7 @@ export class VTPassService {
 
   async pay(
     payload: VTPassPayPayload,
-  ): Promise<VTPassTransactionResponse['content']['transactions']> {
+  ): Promise<VTPassTransactionResponse["content"]["transactions"]> {
     const { data } = await this.httpClient.post<VTPassTransactionResponse>(
       `${this.config.apiBaseUrl}/pay`,
       payload,
@@ -189,7 +188,7 @@ export class VTPassService {
 
     if (
       !data?.response_description ||
-      (data.code !== '000' && data.code !== '099')
+      (data.code !== "000" && data.code !== "099")
     ) {
       throw new Error(
         `Failed to buy ${payload.serviceID}: ${data?.response_description}`,
@@ -201,7 +200,7 @@ export class VTPassService {
 
   async getTransaction(
     requestId: string,
-  ): Promise<VTPassTransactionResponse['content']['transactions']> {
+  ): Promise<VTPassTransactionResponse["content"]["transactions"]> {
     const { data } = await this.httpClient.post<VTPassTransactionResponse>(
       `${this.config.apiBaseUrl}/requery`,
       {
@@ -214,7 +213,7 @@ export class VTPassService {
       },
     );
 
-    if (!data?.response_description || data.code !== '000') {
+    if (!data?.response_description || data.code !== "000") {
       throw new Error(
         `Failed to get transaction ${requestId}: ${data?.response_description}`,
       );
@@ -236,7 +235,7 @@ export class VTPassService {
       },
     );
 
-    if (data.code !== '000' || (data.content as { error: string }).error) {
+    if (data.code !== "000" || (data.content as { error: string }).error) {
       throw new Error(
         `Failed to validate customer: ${data?.response_description}`,
       );
@@ -251,7 +250,7 @@ export class VTPassService {
     amount: number | string,
   ): string {
     const name =
-      SUPPORTED_BILLERS.find((name) =>
+      SUPPORTED_BILLERS.find((name: string) =>
         billerName.toLowerCase().includes(name),
       ) || billerName;
 
@@ -261,8 +260,8 @@ export class VTPassService {
 
     // e.g: mtn-data-500
     return `${name} ${category} ${Math.round(Number(amount))}`
-      .split(' ')
-      .join('-')
+      .split(" ")
+      .join("-")
       .toLowerCase();
   }
 }

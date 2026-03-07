@@ -1,5 +1,5 @@
-import axios, { AxiosInstance } from 'axios';
-import type { PayObject } from '../common/types/payment';
+import axios, { AxiosInstance } from "axios";
+import type { PayObject } from "../../common/types/payment";
 import type {
   BillerCategoriesResponse,
   BillerCategoryResponse,
@@ -9,18 +9,18 @@ import type {
   PaymentItemsResponse,
   TransactionResponse,
   ValidateCustomersResponse,
-} from '../common/types/interswitch';
-import type { BillerItem } from '../common/types/biller-item';
-import type { BillCategory } from '../common/types/vtpass';
+} from "../../common/types/interswitch";
+import type { BillerItem } from "../../common/types/biller-item";
+import type { BillCategory } from "../../common/types/vtpass";
 import {
   SUPPORTED_BILLERS,
   SUPPORTED_ELECTRICITY_PROVIDERS,
   SUPPORTED_BILL_ITEMS,
-} from '../common/constants/biller';
+} from "../../common/constants/biller";
 import {
   getStaticInternalCode,
   isStaticCategory,
-} from '../common/utils/static-codes';
+} from "../../common/utils/static-codes";
 
 interface StoredToken {
   access_token: string;
@@ -45,7 +45,7 @@ export interface InterSwitchConfig {
   paymentReferencePrefix: string;
 }
 
-const INTERSWITCH_BASIC_TOKEN_KEY = 'interswitch:token';
+const INTERSWITCH_BASIC_TOKEN_KEY = "interswitch:token";
 
 export class InterSwitchService {
   private pendingTokenPromise: Promise<string> | null = null;
@@ -77,11 +77,7 @@ export class InterSwitchService {
           return item.value;
         }
 
-        async set(
-          key: string,
-          value: string,
-          ttl?: number,
-        ): Promise<void> {
+        async set(key: string, value: string, ttl?: number): Promise<void> {
           this.store.set(key, {
             value,
             expiry: ttl ? Date.now() + ttl * 1000 : undefined,
@@ -121,14 +117,14 @@ export class InterSwitchService {
       try {
         const basic = Buffer.from(
           `${this.config.clientId}:${this.config.secretKey}`,
-        ).toString('base64');
+        ).toString("base64");
 
         const resp = await this.httpClient.post(
           this.config.authUrl,
           {},
           {
             headers: {
-              'Content-Type': 'application/json',
+              "Content-Type": "application/json",
               Authorization: `Basic ${basic}`,
             },
           },
@@ -141,12 +137,12 @@ export class InterSwitchService {
         };
 
         if (!data?.access_token || !data?.expires_in) {
-          throw new Error('Invalid token response from Interswitch');
+          throw new Error("Invalid token response from Interswitch");
         }
 
         const token: StoredToken = {
           access_token: data.access_token,
-          token_type: data.token_type ?? 'Bearer',
+          token_type: data.token_type ?? "Bearer",
           expiry: Date.now() + data.expires_in * 1000,
         };
 
@@ -172,10 +168,9 @@ export class InterSwitchService {
   }
 
   async getBillerCategories(): Promise<BillerCategoriesResponse> {
-    const { data } =
-      await this.httpClient.get<BillerCategoriesResponse>(
-        `${this.baseUrl}/services/categories`,
-      );
+    const { data } = await this.httpClient.get<BillerCategoriesResponse>(
+      `${this.baseUrl}/services/categories`,
+    );
     return data;
   }
 
@@ -275,13 +270,14 @@ export class InterSwitchService {
     const allCategories = res.BillerList?.Category ?? [];
 
     // 2️⃣ Extract only supported billers
-    const billers = allCategories.flatMap((category) => {
+    const billers = allCategories.flatMap((category: any) => {
       if (!supportedCategories.includes(category.Name)) return [];
 
-      const supportedBillerNames = SUPPORTED_BILL_ITEMS[category.Name];
-      return category.Billers.filter((biller) =>
+      const supportedBillerNames =
+        (SUPPORTED_BILL_ITEMS as any)[category.Name] || [];
+      return category.Billers.filter((biller: any) =>
         supportedBillerNames.includes(biller.Name),
-      ).map((biller) => ({
+      ).map((biller: any) => ({
         id: biller.Id,
         name: biller.Name,
         categoryId: category.Id,
@@ -290,16 +286,16 @@ export class InterSwitchService {
     });
 
     // Filter out invalid billers
-    const validBillers = billers.filter((b) => b.id);
+    const validBillers = billers.filter((b: any) => b.id);
 
     // 3️⃣ Fetch all biller items in parallel (with concurrency control)
     const results = await Promise.allSettled(
-      validBillers.map((biller) => this.fetchBillerItemsSafe(biller)),
+      validBillers.map((biller: any) => this.fetchBillerItemsSafe(biller)),
     );
 
     // 4️⃣ Merge successful results
     for (const r of results) {
-      if (r.status === 'fulfilled') billingItems.push(...r.value);
+      if (r.status === "fulfilled") billingItems.push(...r.value);
     }
 
     return billingItems;
@@ -319,7 +315,7 @@ export class InterSwitchService {
       const items = itemsResp.PaymentItems ?? [];
 
       return items
-        .map((item) => {
+        .map((item: any) => {
           const amount = Number(item.Amount);
           let displayName = item.Name || item.Id;
           const category = this.getCategory(
@@ -329,11 +325,7 @@ export class InterSwitchService {
           if (!category) return null;
 
           // return if airtime and amount is greater than 50 naira and amount type is greater than 1
-          if (
-            category === 'AIRTIME' &&
-            amount > 5000 &&
-            item.AmountType > 1
-          ) {
+          if (category === "AIRTIME" && amount > 5000 && item.AmountType > 1) {
             return null;
           }
 
@@ -343,19 +335,19 @@ export class InterSwitchService {
             Math.round(amount / 100), // convert amount to naira
           );
 
-          if (category === 'ELECTRICITY') {
+          if (category === "ELECTRICITY") {
             // use internal code as display name for electricity
-            displayName = internalCode.split('-').join(' ').toUpperCase();
+            displayName = internalCode.split("-").join(" ").toUpperCase();
 
             // add postpaid or prepaid to internal code
-            if (item.BillerName.toLowerCase().includes('postpaid')) {
+            if (item.BillerName.toLowerCase().includes("postpaid")) {
               internalCode = `${internalCode}-postpaid`;
             } else {
               internalCode = `${internalCode}-prepaid`;
             }
           }
 
-          if (category === 'GAMING') {
+          if (category === "GAMING") {
             displayName = item.BillerName;
           }
 
@@ -369,7 +361,7 @@ export class InterSwitchService {
             internalCode,
             paymentCode: item.PaymentCode,
             billerId: String(item.BillerId),
-            provider: 'INTERSWITCH',
+            provider: "INTERSWITCH",
           };
         })
         .filter(Boolean) as BillerItem[];
@@ -382,35 +374,38 @@ export class InterSwitchService {
     }
   }
 
-  private getCategory(categoryName: string, billerName: string): BillCategory | null {
+  private getCategory(
+    categoryName: string,
+    billerName: string,
+  ): BillCategory | null {
     // category in provider is 'Mobile Recharge'
     if (
-      categoryName === 'Mobile Recharge' ||
-      (categoryName === 'Mobile/Recharge' && billerName.includes('Data'))
+      categoryName === "Mobile Recharge" ||
+      (categoryName === "Mobile/Recharge" && billerName.includes("Data"))
     ) {
-      return 'AIRTIME';
+      return "AIRTIME";
     }
 
     // category in production is 'Airtime and Data'
     if (
-      categoryName === 'Airtime and Data' ||
-      categoryName === 'Airtel Data' ||
-      (categoryName === 'Mobile/Recharge' && billerName.includes('Data'))
+      categoryName === "Airtime and Data" ||
+      categoryName === "Airtel Data" ||
+      (categoryName === "Mobile/Recharge" && billerName.includes("Data"))
     ) {
-      return 'DATA';
+      return "DATA";
     }
 
-    if (categoryName === 'Utility Bills' || categoryName === 'Utilities') {
-      return 'ELECTRICITY';
+    if (categoryName === "Utility Bills" || categoryName === "Utilities") {
+      return "ELECTRICITY";
     }
 
     // category in provider is 'Cable TV'
-    if (categoryName === 'Cable TV Bills' || categoryName === 'Cable TV') {
-      return 'TV';
+    if (categoryName === "Cable TV Bills" || categoryName === "Cable TV") {
+      return "TV";
     }
 
-    if (categoryName === 'Betting, Lottery and Gaming') {
-      return 'GAMING';
+    if (categoryName === "Betting, Lottery and Gaming") {
+      return "GAMING";
     }
 
     return null;
@@ -422,15 +417,15 @@ export class InterSwitchService {
     amount: number,
   ): string {
     let name =
-      SUPPORTED_BILLERS.find((name) =>
+      SUPPORTED_BILLERS.find((name: string) =>
         billerName.toLowerCase().includes(name),
       ) || billerName;
 
-    if (name.toLowerCase().includes('t2')) {
-      name = '9mobile';
+    if (name.toLowerCase().includes("t2")) {
+      name = "9mobile";
     }
 
-    if (category === 'ELECTRICITY') {
+    if (category === "ELECTRICITY") {
       const billerNameLower = billerName.toLowerCase();
 
       for (const [key, value] of Object.entries(
@@ -455,8 +450,8 @@ export class InterSwitchService {
 
     // e.g: mtn-data-amount
     return `${name} ${category} ${Math.round(amount)}`
-      .split(' ')
-      .join('-')
+      .split(" ")
+      .join("-")
       .toLowerCase();
   }
 }
