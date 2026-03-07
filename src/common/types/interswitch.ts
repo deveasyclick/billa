@@ -1,5 +1,3 @@
-import type { Customer } from './interswitch-customer';
-
 export interface Category {
   Id: number;
   Name: string;
@@ -94,4 +92,17 @@ export interface ConfirmTransactionResponse {
     ReferenceNumber: number;
   };
   IsSuccessful: boolean;
+}
+
+export interface Customer {
+  TerminalId: string;
+  BillerId: number;
+  PaymentCode: string;
+  CustomerId: string;
+  ResponseCode: string;
+  FullName: string;
+  Amount: number;
+  AmountType: number;
+  AmountTypeDescription: string;
+  Surcharge: number;
 }
