@@ -1,10 +1,11 @@
 import type { BillerItem } from "../common/types/biller-item";
-import type { PayResponse, Customer } from "../common/types/interswitch";
+import type {
+  PayResponse,
+  Customer,
+  InterSwitchConfig,
+} from "../common/types/interswitch";
 import type { BillCategory } from "../common/types/vtpass";
-import {
-  InterSwitchService,
-  type InterSwitchConfig,
-} from "../integration/interswitch/interswitch.service";
+import { InterSwitchService } from "../integration/interswitch/interswitch.service";
 import { InterswitchProvider } from "../providers/interswitch.provider";
 
 /**
@@ -27,16 +28,16 @@ export class InterswitchClient {
   }
 
   /**
-   * Fetch available plans from InterSwitch.  Category filter is optional.
+   * Fetch available plans from InterSwitch.  You may optionally supply a
+   * category to limit the results; this is translated into the generic filter
+   * object used by {@link InterSwitchService.getPlans}.
    */
   async getPlans(category?: BillCategory): Promise<BillerItem[]> {
-    const plans = await this.service.findPlans();
     if (category) {
-      return plans.filter(
-        (p) => p.category.toUpperCase() === category.toUpperCase(),
-      );
+      // send empty array for category to indicate "all items in this category"
+      return this.service.getPlans({ filters: { [category]: [] } });
     }
-    return plans;
+    return this.service.getPlans();
   }
 
   /**

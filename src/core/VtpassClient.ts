@@ -21,13 +21,10 @@ export class VtpassClient {
   }
 
   async getPlans(category?: BillCategory): Promise<BillerItem[]> {
-    const plans = await this.service.getPlans();
     if (category) {
-      return plans.filter(
-        (p) => p.category.toUpperCase() === category.toUpperCase(),
-      );
+      return this.service.getPlans({ filters: { [category]: [] } });
     }
-    return plans;
+    return this.service.getPlans();
   }
 
   async pay(request: {

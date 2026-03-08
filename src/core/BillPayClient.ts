@@ -174,13 +174,19 @@ export class BillPayClient {
    * If provider is specified, returns plans from that provider only
    * If provider is 'BOTH', returns combined plans from both providers
    */
-  async getPlans(
-    category?: BillCategory,
-    provider?: ProviderType | "BOTH",
-  ): Promise<BillerItem[]> {
-    const targetProvider = provider ?? this.primaryProvider;
+  async getPlans(options?: {
+    category?: BillCategory;
+    provider?: ProviderType | "BOTH";
+    filters?: Record<string, string[]>;
+    forceRefresh?: boolean;
+    ttlMs?: number;
+  }): Promise<BillerItem[]> {
+    const { category, provider, filters, forceRefresh, ttlMs } = options || {};
 
-    // helper to filter categories
+    const targetProvider = provider ?? this.primaryProvider;
+    const serviceOpts = { filters, forceRefresh, ttlMs };
+
+    // helper to filter categories if consumer passed `category`
     const filterCategory = (plans: BillerItem[]) =>
       category
         ? plans.filter(
@@ -189,31 +195,31 @@ export class BillPayClient {
         : plans;
 
     if (targetProvider === "BOTH") {
-      // return whatever providers are available
       const results: BillerItem[][] = [];
       if (this.interswitchService) {
-        results.push(await this.interswitchService.findPlans());
+        results.push(await this.interswitchService.getPlans(serviceOpts));
       }
       if (this.vtpassService) {
-        results.push(await this.vtpassService.getPlans());
+        results.push(await this.vtpassService.getPlans(serviceOpts));
       }
       const allPlans = results.flat();
       return filterCategory(allPlans);
     }
 
-    // provider-specific path
     if (targetProvider === "INTERSWITCH") {
       if (!this.interswitchService) {
         throw new Error("INTERSWITCH provider is not configured");
       }
-      return filterCategory(await this.interswitchService.findPlans());
+      return filterCategory(
+        await this.interswitchService.getPlans(serviceOpts),
+      );
     }
 
-    // VTPASS
+    // VTPASS path
     if (!this.vtpassService) {
       throw new Error("VTPASS provider is not configured");
     }
-    return filterCategory(await this.vtpassService.getPlans());
+    return filterCategory(await this.vtpassService.getPlans(serviceOpts));
   }
 
   /**
