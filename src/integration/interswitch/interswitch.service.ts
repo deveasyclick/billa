@@ -22,18 +22,6 @@ import {
   isStaticCategory,
 } from "../../common/utils/static-codes";
 
-interface StoredToken {
-  access_token: string;
-  token_type: string;
-  expiry: number; // timestamp in ms
-}
-
-interface CacheInterface {
-  get(key: string): Promise<string | undefined>;
-  set(key: string, value: string, ttl?: number): Promise<void>;
-  del(key: string): Promise<void>;
-}
-
 export interface InterSwitchConfig {
   clientId: string;
   secretKey: string;
@@ -45,126 +33,45 @@ export interface InterSwitchConfig {
   paymentReferencePrefix: string;
 }
 
-const INTERSWITCH_BASIC_TOKEN_KEY = "interswitch:token";
-
 export class InterSwitchService {
-  private pendingTokenPromise: Promise<string> | null = null;
   private readonly baseUrl: string;
   private readonly httpClient: AxiosInstance;
-  private cache: CacheInterface;
 
   constructor(
     private readonly config: InterSwitchConfig,
-    cache?: CacheInterface,
     httpClient?: AxiosInstance,
   ) {
     this.baseUrl = `${config.apiBaseUrl}/quicktellerservice/api/v5`;
     this.httpClient = httpClient || axios.create();
-
-    // Default in-memory cache if not provided
-    this.cache =
-      cache ||
-      new (class implements CacheInterface {
-        private store = new Map<string, { value: string; expiry?: number }>();
-
-        async get(key: string): Promise<string | undefined> {
-          const item = this.store.get(key);
-          if (!item) return undefined;
-          if (item.expiry && Date.now() > item.expiry) {
-            this.store.delete(key);
-            return undefined;
-          }
-          return item.value;
-        }
-
-        async set(key: string, value: string, ttl?: number): Promise<void> {
-          this.store.set(key, {
-            value,
-            expiry: ttl ? Date.now() + ttl * 1000 : undefined,
-          });
-        }
-
-        async del(key: string): Promise<void> {
-          this.store.delete(key);
-        }
-      })();
   }
 
-  async getToken(forceRefresh = false): Promise<string> {
-    // Return in-progress promise if any
-    if (this.pendingTokenPromise) {
-      return this.pendingTokenPromise;
+  async getToken(): Promise<string> {
+    const basic = Buffer.from(
+      `${this.config.clientId}:${this.config.secretKey}`,
+    ).toString("base64");
+
+    const resp = await this.httpClient.post(
+      this.config.authUrl,
+      {},
+      {
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Basic ${basic}`,
+        },
+      },
+    );
+
+    const data = resp.data as {
+      access_token: string;
+      expires_in: number;
+      token_type?: string;
+    };
+
+    if (!data?.access_token || !data?.expires_in) {
+      throw new Error("Invalid token response from Interswitch");
     }
 
-    // Try cache first (unless forceRefresh)
-    if (!forceRefresh) {
-      const cached = await this.cache.get(INTERSWITCH_BASIC_TOKEN_KEY);
-      if (cached) {
-        try {
-          const token: StoredToken = JSON.parse(cached);
-          // refresh a little before expiry (e.g. 60s buffer)
-          const bufferMs = 60 * 1000;
-          if (Date.now() + bufferMs < token.expiry) {
-            return token.access_token;
-          }
-        } catch (_e) {
-          // corrupted cache — continue to refresh
-        }
-      }
-    }
-
-    this.pendingTokenPromise = (async () => {
-      try {
-        const basic = Buffer.from(
-          `${this.config.clientId}:${this.config.secretKey}`,
-        ).toString("base64");
-
-        const resp = await this.httpClient.post(
-          this.config.authUrl,
-          {},
-          {
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Basic ${basic}`,
-            },
-          },
-        );
-
-        const data = resp.data as {
-          access_token: string;
-          expires_in: number;
-          token_type?: string;
-        };
-
-        if (!data?.access_token || !data?.expires_in) {
-          throw new Error("Invalid token response from Interswitch");
-        }
-
-        const token: StoredToken = {
-          access_token: data.access_token,
-          token_type: data.token_type ?? "Bearer",
-          expiry: Date.now() + data.expires_in * 1000,
-        };
-
-        await this.cache.set(
-          INTERSWITCH_BASIC_TOKEN_KEY,
-          JSON.stringify(token),
-          Math.floor(data.expires_in),
-        );
-
-        return token.access_token;
-      } catch (err: any) {
-        // ensure we clear cache / pending if failed
-        await this.cache.del(INTERSWITCH_BASIC_TOKEN_KEY).catch(() => {});
-        throw new Error(
-          `Failed to get Interswitch token: ${err.response?.data?.message || err.message}`,
-        );
-      } finally {
-        this.pendingTokenPromise = null;
-      }
-    })();
-
-    return this.pendingTokenPromise;
+    return data.access_token;
   }
 
   async getBillerCategories(): Promise<BillerCategoriesResponse> {
