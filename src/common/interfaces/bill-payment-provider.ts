@@ -1,6 +1,5 @@
 import type { BillerItem } from "../types/biller-item";
-import type { PayResponse } from "../types/interswitch";
-import type { Customer } from "../types/interswitch";
+import type { PayResponse, Customer } from "../types/interswitch";
 
 export interface IBillPaymentProvider {
   executePayment(
@@ -19,4 +18,14 @@ export interface IBillPaymentProvider {
     paymentCode: string,
     type?: string,
   ): Promise<Customer>;
+
+  /**
+   * Retrieve biller items/plans exposed by the provider.  Filters and caching
+   * behaviour are passed through to the underlying service.
+   */
+  listPlans?(options?: {
+    filters?: Record<string, string[]>;
+    forceRefresh?: boolean;
+    ttlMs?: number;
+  }): Promise<BillerItem[]>;
 }

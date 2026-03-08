@@ -1,5 +1,5 @@
-import type { BillCategory } from "../../common/types/vtpass";
 import type {
+  BillCategory,
   GetVTPassCategoryResponse,
   GetVTPassServiceResponse,
   GetVTPassVariationsResponse,
@@ -17,7 +17,6 @@ import {
 } from "../../common/utils/static-codes";
 import { SUPPORTED_BILLERS } from "../../common/constants/biller";
 import axios, { AxiosInstance } from "axios";
-import { STATIC_BILL_ITEMS } from "./vtpass.constants";
 
 export interface VTPassConfig {
   apiKey: string;
@@ -95,81 +94,141 @@ export class VTPassService {
     return data.content.variations;
   }
 
-  async getPlans(): Promise<BillerItem[]> {
-    return (
-      await Promise.all([this.getStaticPlans(), this.getDynamicPlans()])
-    ).flat();
-  }
-
-  async getDynamicPlans(): Promise<BillerItem[]> {
-    const dynamicServices = STATIC_BILL_ITEMS.filter(
-      (item) => item.category === "DATA" || item.category === "TV",
-    );
-
-    const results = await Promise.allSettled(
-      dynamicServices.map(async (service: any) => {
-        const provider = service.providers.find(
-          (p: any) => p.name === "VTPASS",
-        );
-        if (!provider) return [];
-
-        const variations = await this.getServiceVariants(provider.billerId);
-        return variations.map((variant: any) => ({
-          internalCode: this.getInternalCode(
-            service.name,
-            service.category,
-            variant.variation_amount,
-          ),
-          category: service.category,
-          billerName: service.name,
-          provider: "VTPASS",
-          billerId: provider.billerId,
-          paymentCode: variant.variation_code,
-          name: variant.name,
-          amount: Number(variant.variation_amount),
-          amountType: 0,
-          active: true,
-          image: service.image,
-        }));
-      }),
-    );
-
-    const items = results
-      .filter((r) => r.status === "fulfilled")
-      .flatMap((r) => (r as PromiseFulfilledResult<BillerItem[]>).value);
-
-    return items;
-  }
-
-  private getStaticPlans(): BillerItem[] {
-    const items: BillerItem[] = [];
-
-    // Select only non-dynamic categories (e.g., airtime, electricity, etc.)
-    const staticServices = STATIC_BILL_ITEMS.filter(
-      (item: any) => item.category !== "DATA" && item.category !== "TV",
-    );
-
-    for (const service of staticServices) {
-      const provider = service.providers.find((p: any) => p.name === "VTPASS");
-      if (!provider) continue;
-
-      items.push({
-        internalCode: this.getInternalCode(service.name, service.category, 0),
-        category: service.category,
-        billerName: service.name,
-        provider: "VTPASS",
-        billerId: provider.billerId,
-        paymentCode:
-          service.category === "ELECTRICITY" ? "prepaid" : provider.billerId,
-        name: service.name,
-        amount: 0, // Amount entered by user (e.g. airtime or electricity)
-        amountType: 0, // 0 means fixed amount
-        active: true,
-        image: service.image,
-      });
+  /**
+   * Fetch available plans, optionally filtering by category/biller and using an
+   * in-memory cache (TTL default 5 minutes).  See service documentation for
+   * `filters` shape; you can pass `forceRefresh` to bypass the cache.
+   */
+  async getPlans(options?: {
+    filters?: Record<string, string[]>;
+    forceRefresh?: boolean;
+    ttlMs?: number;
+  }): Promise<BillerItem[]> {
+    const ttl = options?.ttlMs ?? 5 * 60 * 1000;
+    const key = JSON.stringify(options?.filters || {});
+    const now = Date.now();
+    const cached = this.planCache.get(key);
+    if (cached && now < cached.expiry && !options?.forceRefresh) {
+      return options?.filters
+        ? this.applyFilters(cached.plans, options.filters)
+        : cached.plans;
     }
 
-    return items;
+    const plans = await this.fetchPlans(options?.filters);
+    this.planCache.set(key, { plans, expiry: now + ttl });
+    return plans;
+  }
+
+  /**
+   * Apply filter object to a list of plans (used for cached results).
+   */
+  private applyFilters(
+    plans: BillerItem[],
+    filters: Record<string, string[]>,
+  ): BillerItem[] {
+    return plans.filter((p) => {
+      const allowed = filters[p.category];
+      if (!allowed || allowed.length === 0) return true;
+      return allowed.includes(p.billerName) || allowed.includes(p.billerId);
+    });
+  }
+
+  // simple in-memory cache keyed by filter JSON
+  private readonly planCache: Map<
+    string,
+    { plans: BillerItem[]; expiry: number }
+  > = new Map();
+
+  /**
+   * Internal builder that constructs plans by querying VTpass endpoints.
+   * Optionally applies filters afterwards.
+   */
+  private async fetchPlans(
+    filters?: Record<string, string[]>,
+  ): Promise<BillerItem[]> {
+    const plans: BillerItem[] = [];
+
+    // retrieve categories from VTpass and iterate
+    const categoriesResp = await this.getCategories();
+    for (const cat of categoriesResp.content) {
+      const category = this.mapCategory(cat.identifier);
+      if (!category) continue; // skip unsupported types
+
+      const servicesResp = await this.getServices(cat.identifier);
+      for (const svc of servicesResp.content) {
+        const variants = await this.getServiceVariants(svc.serviceID);
+        if (variants && variants.length > 0) {
+          for (const variant of variants as any) {
+            plans.push({
+              internalCode: this.getInternalCode(
+                svc.name,
+                category,
+                variant.variation_amount,
+              ),
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: variant.variation_code,
+              name: variant.name,
+              amount: Number(variant.variation_amount),
+              amountType: 0,
+              active: true,
+              image: svc.image,
+              requiresValidation: category === "ELECTRICITY",
+            });
+          }
+        } else {
+          plans.push({
+            internalCode: this.getInternalCode(svc.name, category, 0),
+            category,
+            billerName: svc.name,
+            provider: "VTPASS",
+            billerId: svc.serviceID,
+            paymentCode: svc.serviceID,
+            name: svc.name,
+            amount: 0,
+            amountType: 0,
+            active: true,
+            image: svc.image,
+            requiresValidation: category === "ELECTRICITY",
+          });
+        }
+      }
+    }
+
+    if (!filters || Object.keys(filters).length === 0) {
+      return plans;
+    }
+
+    return plans.filter((p) => {
+      const allowed = filters[p.category];
+      if (!allowed || allowed.length === 0) return true;
+      return allowed.includes(p.billerName) || allowed.includes(p.billerId);
+    });
+  }
+
+  /**
+   * Map VTpass category identifier string to our internal BillCategory.
+   */
+  private mapCategory(identifier: string): BillCategory | null {
+    switch (identifier.toLowerCase()) {
+      case "airtime":
+        return "AIRTIME";
+      case "data":
+        return "DATA";
+      case "tv-subscription":
+      case "tv":
+        return "TV";
+      case "electricity-bill":
+      case "electricity":
+        return "ELECTRICITY";
+      case "betting":
+      case "gaming":
+        return "GAMING";
+      default:
+        return null;
+    }
   }
 
   async pay(

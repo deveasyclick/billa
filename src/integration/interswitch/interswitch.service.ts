@@ -141,26 +141,26 @@ export class InterSwitchService {
     const { data } = await this.httpClient.get<ConfirmTransactionResponse>(
       `${this.config.paymentBaseUrl}/quicktellerservice/api/v5/Transactions?requestRef=${this.config.paymentReferencePrefix}${reference}`,
     );
-    return data;
   }
 
-  async findPlans(): Promise<BillerItem[]> {
-    const supportedCategories = Object.keys(SUPPORTED_BILL_ITEMS);
+  /**
+   * Internal: fetch every plan from the provider, optionally narrowing by
+   * category/item filters.  Filters should mirror the shape of
+   * `SUPPORTED_BILL_ITEMS` (object where keys are category names and values are
+   * arrays of biller identifiers).  Passing no value returns all plans.
+   */
+  private async fetchPlans(
+    filters?: Record<string, string[]>,
+  ): Promise<BillerItem[]> {
     const billingItems: BillerItem[] = [];
 
     // 1️⃣ Fetch categories with billers
     const res = await this.getCategoriesWithBillers();
     const allCategories = res.BillerList?.Category ?? [];
 
-    // 2️⃣ Extract only supported billers
+    // 2️⃣ Build list of billers (no filtering yet)
     const billers = allCategories.flatMap((category: any) => {
-      if (!supportedCategories.includes(category.Name)) return [];
-
-      const supportedBillerNames =
-        (SUPPORTED_BILL_ITEMS as any)[category.Name] || [];
-      return category.Billers.filter((biller: any) =>
-        supportedBillerNames.includes(biller.Name),
-      ).map((biller: any) => ({
+      return category.Billers.map((biller: any) => ({
         id: biller.Id,
         name: biller.Name,
         categoryId: category.Id,
@@ -168,8 +168,17 @@ export class InterSwitchService {
       }));
     });
 
-    // Filter out invalid billers
-    const validBillers = billers.filter((b: any) => b.id);
+    // Filter by provided filters object if present
+    const filteredBillers = filters
+      ? billers.filter((biller) => {
+          const list = filters[biller.categoryName];
+          if (!list || list.length === 0) return true; // no restriction for this category
+          // allow match by biller name or id string
+          return list.includes(biller.name) || list.includes(String(biller.id));
+        })
+      : billers;
+
+    const validBillers = filteredBillers.filter((b: any) => b.id);
 
     // 3️⃣ Fetch all biller items in parallel (with concurrency control)
     const results = await Promise.allSettled(
