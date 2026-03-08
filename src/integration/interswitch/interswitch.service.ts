@@ -4,8 +4,8 @@ import type {
   BillerCategoriesResponse,
   BillerCategoryResponse,
   BillersWithCategoriesResponse,
-  ConfirmCardPaymentResponse,
   ConfirmTransactionResponse,
+  InterSwitchConfig,
   PaymentItemsResponse,
   TransactionResponse,
   ValidateCustomersResponse,
@@ -21,17 +21,6 @@ import {
   getStaticInternalCode,
   isStaticCategory,
 } from "../../common/utils/static-codes";
-
-export interface InterSwitchConfig {
-  clientId: string;
-  secretKey: string;
-  terminalId: string;
-  apiBaseUrl: string;
-  authUrl: string;
-  paymentBaseUrl: string;
-  merchantCode: string;
-  paymentReferencePrefix: string;
-}
 
 export class InterSwitchService {
   private readonly baseUrl: string;
@@ -151,19 +140,6 @@ export class InterSwitchService {
   ): Promise<ConfirmTransactionResponse> {
     const { data } = await this.httpClient.get<ConfirmTransactionResponse>(
       `${this.config.paymentBaseUrl}/quicktellerservice/api/v5/Transactions?requestRef=${this.config.paymentReferencePrefix}${reference}`,
-    );
-    return data;
-  }
-
-  async confirmCardPayment({
-    amount,
-    transactionReference,
-  }: {
-    amount: number;
-    transactionReference: string;
-  }): Promise<ConfirmCardPaymentResponse> {
-    const { data } = await this.httpClient.get<ConfirmCardPaymentResponse>(
-      `${this.config.paymentBaseUrl}/gettransaction.json?merchantCode=${this.config.merchantCode}&amount=${amount}&transactionReference=${transactionReference}`,
     );
     return data;
   }

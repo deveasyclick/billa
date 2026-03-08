@@ -63,16 +63,6 @@ export interface PayResponse {
   status: string;
 }
 
-export type ConfirmCardPaymentResponse = {
-  Amount: number;
-  CardNumber: string;
-  MerchantReference: string;
-  PaymentReference: string;
-  ResponseCode: string;
-  TransactionAmount: number;
-  IsSuccessful: boolean;
-};
-
 export interface TransactionResponse {
   ResponseCode: string;
   ResponseCodeGrouping: string;
@@ -105,4 +95,15 @@ export interface Customer {
   AmountType: number;
   AmountTypeDescription: string;
   Surcharge: number;
+}
+
+export interface InterSwitchConfig {
+  clientId: string;
+  secretKey: string;
+  terminalId: string;
+  apiBaseUrl: string;
+  authUrl: string;
+  paymentBaseUrl: string;
+  merchantCode: string;
+  paymentReferencePrefix: string;
 }
