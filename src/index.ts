@@ -41,7 +41,6 @@ export type {
   PaymentItemsResponse,
   ValidateCustomersResponse,
   PayResponse,
-  ConfirmCardPaymentResponse,
   TransactionResponse,
   ConfirmTransactionResponse,
 } from "./common/types";
@@ -74,4 +73,3 @@ export { InterSwitchService } from "./integration/interswitch/interswitch.servic
 export type { InterSwitchConfig } from "./integration/interswitch/interswitch.service";
 export { VTPassService } from "./integration/vtpass/vtpass.service";
 export type { VTPassConfig } from "./integration/vtpass/vtpass.service";
-export { STATIC_BILL_ITEMS } from "./integration/vtpass/vtpass.constants";

@@ -32,7 +32,6 @@ export type {
   PaymentItemsResponse,
   ValidateCustomersResponse,
   PayResponse,
-  ConfirmCardPaymentResponse,
   TransactionResponse,
   ConfirmTransactionResponse,
 } from "./interswitch";

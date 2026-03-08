@@ -1,8 +1,10 @@
+import type { BillCategory } from "./vtpass";
+
 export type BillerItem = {
   internalCode: string;
-  category: string; // 'data' | 'tv' | 'electricity' | 'airtime' | 'gaming'
+  category: BillCategory;
   billerName: string; // e.g mtn | dstv
-  provider: string; // e.g 'vtpass' | 'interswitch'
+  provider: "INTERSWITCH" | "VTPASS";
   billerId: string; // service id in vtpass
   paymentCode: string;
   name: string; // "MTN 500" or "DSTV YANGA"
@@ -10,4 +12,5 @@ export type BillerItem = {
   amountType: number;
   active: boolean;
   image?: string;
+  requiresValidation: boolean;
 };
