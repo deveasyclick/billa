@@ -13,6 +13,7 @@ import {
   BillPaymentProviderFactory,
   type ProviderType,
 } from "../providers/bill-payment-provider.factory";
+import { validateProvider } from "../common/utils/validate-provider";
 
 export interface BillPayClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */
@@ -83,20 +84,15 @@ export class BillPayClient {
     primary: ProviderType,
     fallback?: ProviderType | null,
   ): void {
+    const services = {
+      interswitch: this.interswitchService,
+      vtpass: this.vtpassService,
+    };
+    
     // validate requested providers are configured
-    if (primary === "INTERSWITCH" && !this.interswitchService) {
-      throw new Error("INTERSWITCH provider is not configured");
-    }
-    if (primary === "VTPASS" && !this.vtpassService) {
-      throw new Error("VTPASS provider is not configured");
-    }
+    validateProvider(primary, services);
     if (fallback) {
-      if (fallback === "INTERSWITCH" && !this.interswitchService) {
-        throw new Error("INTERSWITCH provider is not configured");
-      }
-      if (fallback === "VTPASS" && !this.vtpassService) {
-        throw new Error("VTPASS provider is not configured");
-      }
+      validateProvider(fallback, services);
     }
 
     this.primaryProvider = primary;
@@ -126,12 +122,10 @@ export class BillPayClient {
 
     if (providerOverride) {
       // ensure override is available
-      if (providerOverride === "INTERSWITCH" && !this.interswitchService) {
-        throw new Error("INTERSWITCH provider is not configured");
-      }
-      if (providerOverride === "VTPASS" && !this.vtpassService) {
-        throw new Error("VTPASS provider is not configured");
-      }
+      validateProvider(providerOverride, {
+        interswitch: this.interswitchService,
+        vtpass: this.vtpassService,
+      });
       providersToTry.push(providerOverride);
     } else {
       providersToTry.push(this.primaryProvider);
@@ -153,12 +147,10 @@ export class BillPayClient {
     const provider = request.provider ?? this.primaryProvider;
 
     // ensure provider is configured
-    if (provider === "INTERSWITCH" && !this.interswitchService) {
-      throw new Error("INTERSWITCH provider is not configured");
-    }
-    if (provider === "VTPASS" && !this.vtpassService) {
-      throw new Error("VTPASS provider is not configured");
-    }
+    validateProvider(provider, {
+      interswitch: this.interswitchService,
+      vtpass: this.vtpassService,
+    });
 
     const providerInstance = this.factory.getProvider(provider);
     return providerInstance.validateCustomer(
@@ -207,19 +199,15 @@ export class BillPayClient {
     }
 
     if (targetProvider === "INTERSWITCH") {
-      if (!this.interswitchService) {
-        throw new Error("INTERSWITCH provider is not configured");
-      }
+      validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
       return filterCategory(
-        await this.interswitchService.getPlans(serviceOpts),
+        await this.interswitchService!.getPlans(serviceOpts),
       );
     }
 
     // VTPASS path
-    if (!this.vtpassService) {
-      throw new Error("VTPASS provider is not configured");
-    }
-    return filterCategory(await this.vtpassService.getPlans(serviceOpts));
+    validateProvider("VTPASS", { vtpass: this.vtpassService });
+    return filterCategory(await this.vtpassService!.getPlans(serviceOpts));
   }
 
   /**
