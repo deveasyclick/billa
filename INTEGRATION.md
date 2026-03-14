@@ -89,7 +89,10 @@ export class BillPayService {
    */
   async getPlans(category?: string) {
     try {
-      return await this.billPayClient.getPlans(category as any, 'BOTH');
+      return await this.billPayClient.getPlans({
+        category: category as any,
+        provider: 'BOTH',
+      });
     } catch (error) {
       this.logger.error('Failed to get plans', error);
       throw error;

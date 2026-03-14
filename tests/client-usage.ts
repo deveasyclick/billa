@@ -48,6 +48,16 @@ async function main() {
   const interClient = new InterswitchClient({ interswitch: interConfig });
   console.log("wrapper works", await interClient.getPlans());
 
+  // fetch plans filtered by category through the wrapper convenience
+  console.log("airtime plans", await interClient.getPlans("AIRTIME"));
+
+  // using filter object directly (same shape as SUPPORTED_BILL_ITEMS)
+  const filtered = await both.getPlans({
+    filters: { "Airtime and Data": ["MTN"] },
+    forceRefresh: true,
+  });
+  console.log("filtered via object", filtered);
+
   // vtpass only
   const onlyVt = new BillPayClient({ vtpass: vtConfig });
   console.log("vtpass only primary", onlyVt.getActiveProviders());

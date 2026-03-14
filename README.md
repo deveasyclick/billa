@@ -65,8 +65,8 @@ const interswitchOnly = new InterswitchClient({
 // Set provider preference (primary and fallback)
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
 
-// Get available plans
-const plans = await client.getPlans('AIRTIME', 'BOTH');
+// Get available plans (object arguments, includes cache options)
+const plans = await client.getPlans({ category: 'AIRTIME', provider: 'BOTH' });
 console.log(plans);
 
 // Find a specific plan
@@ -157,7 +157,7 @@ Get current provider preferences.
 const { primary, fallback } = client.getActiveProviders();
 ```
 
-##### `getPlans(category?: BillCategory, provider?: ProviderType | 'BOTH'): Promise<BillerItem[]>`
+##### `getPlans(opts?: { category?: BillCategory; provider?: ProviderType | 'BOTH'; filters?: Record<string,string[]>; forceRefresh?: boolean; ttlMs?: number; }): Promise<BillerItem[]>`
 
 Fetch available billing plans.  When using `BillPayClient` with only one provider, the
 `provider` argument is ignored since there is only a single source.  Both
@@ -170,13 +170,19 @@ Fetch available billing plans.  When using `BillPayClient` with only one provide
 
 ```typescript
 // Get all airtime plans from both providers
-const plans = await client.getPlans('AIRTIME', 'BOTH');
+const plans = await client.getPlans({ category: 'AIRTIME', provider: 'BOTH' });
 
 // Get all TV plans from primary provider
-const tvPlans = await client.getPlans('TV');
+const tvPlans = await client.getPlans({ category: 'TV' });
 
 // Get all available plans from VTPass
-const vtpassPlans = await client.getPlans(undefined, 'VTPASS');
+const vtpassPlans = await client.getPlans({ provider: 'VTPASS' });
+
+// Advanced: apply explicit filters and bypass cache
+const someFiltered = await client.getPlans({
+  filters: { 'Airtime and Data': ['MTN'] },
+  forceRefresh: true,
+});
 ```
 
 ##### `pay(request: PayRequest): Promise<PayResponse>`
