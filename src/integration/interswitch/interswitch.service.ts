@@ -291,13 +291,16 @@ export class InterSwitchService {
     const filteredBillers = filters
       ? billers.filter((biller) => {
           const list = filters[biller.categoryName];
-          if (!list || list.length === 0) return true; // no restriction for this category
+          if (!list) return false;
+
+          if (list.length === 0) return true; // return all billers
+
           // allow match by biller name or id string
           return list.includes(biller.name) || list.includes(String(biller.id));
         })
       : billers;
-
     const validBillers = filteredBillers.filter((b: MappedBiller) => b.id);
+
     // 3️⃣ Fetch all biller items in parallel (with concurrency control)
     const results = await Promise.allSettled(
       validBillers.map((biller: MappedBiller) =>
