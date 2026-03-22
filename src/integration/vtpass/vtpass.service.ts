@@ -11,11 +11,6 @@ import type {
   VTPassVerifyMeterNoPayload,
 } from "../../common/types/vtpass";
 import type { BillerItem } from "../../common/types/biller-item";
-import {
-  getStaticInternalCode,
-  isStaticCategory,
-} from "../../common/utils/static-codes";
-import { SUPPORTED_BILLERS } from "../../common/constants/biller";
 import axios, { AxiosInstance } from "axios";
 
 export interface VTPassConfig {
@@ -160,11 +155,6 @@ export class VTPassService {
         if (variants && variants.length > 0) {
           for (const variant of variants as any) {
             plans.push({
-              internalCode: this.getInternalCode(
-                svc.name,
-                category,
-                variant.variation_amount,
-              ),
               category,
               billerName: svc.name,
               provider: "VTPASS",
@@ -180,7 +170,6 @@ export class VTPassService {
           }
         } else {
           plans.push({
-            internalCode: this.getInternalCode(svc.name, category, 0),
             category,
             billerName: svc.name,
             provider: "VTPASS",
@@ -301,26 +290,5 @@ export class VTPassService {
     }
 
     return data.content as VTPassCustomer;
-  }
-
-  private getInternalCode(
-    billerName: string,
-    category: BillCategory,
-    amount: number | string,
-  ): string {
-    const name =
-      SUPPORTED_BILLERS.find((name: string) =>
-        billerName.toLowerCase().includes(name),
-      ) || billerName;
-
-    if (isStaticCategory(category)) {
-      return getStaticInternalCode(name, category);
-    }
-
-    // e.g: mtn-data-500
-    return `${name} ${category} ${Math.round(Number(amount))}`
-      .split(" ")
-      .join("-")
-      .toLowerCase();
   }
 }

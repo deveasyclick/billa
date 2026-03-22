@@ -45,17 +45,6 @@ export type {
   ConfirmTransactionResponse,
 } from "./common/types";
 
-export {
-  SUPPORTED_BILLERS,
-  SUPPORTED_ELECTRICITY_PROVIDERS,
-  SUPPORTED_BILL_ITEMS,
-} from "./common/constants/biller";
-
-export {
-  getStaticInternalCode,
-  isStaticCategory,
-} from "./common/utils/static-codes";
-
 // Provider implementations
 export { BillPaymentProviderFactory } from "./providers/bill-payment-provider.factory";
 export type { ProviderType } from "./providers/bill-payment-provider.factory";

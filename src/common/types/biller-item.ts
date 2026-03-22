@@ -1,8 +1,6 @@
-import type { BillCategory } from "./vtpass";
-
 export type BillerItem = {
-  internalCode: string;
-  category: BillCategory;
+  internalCode?: string;
+  category: string;
   billerName: string; // e.g mtn | dstv
   provider: "INTERSWITCH" | "VTPASS";
   billerId: string; // service id in vtpass
