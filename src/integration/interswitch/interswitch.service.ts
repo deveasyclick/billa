@@ -2,11 +2,14 @@ import axios, { AxiosInstance } from "axios";
 import type { PayObject } from "../../common/types/payment";
 export type { InterSwitchConfig } from "../../common/types/interswitch";
 import type {
+  Biller,
   BillerCategoriesResponse,
   BillerCategoryResponse,
   BillersWithCategoriesResponse,
+  Category,
   ConfirmTransactionResponse,
   InterSwitchConfig,
+  PaymentItem,
   PaymentItemsResponse,
   TransactionResponse,
   ValidateCustomersResponse,
@@ -22,6 +25,13 @@ type InterswitchTokenResp = {
 type ValidateCustomerRequest = {
   paymentCode: string;
   customerId: string;
+};
+
+type MappedBiller = {
+  id: number;
+  name: string;
+  categoryId: number;
+  categoryName: string;
 };
 
 export class InterSwitchService {
@@ -268,8 +278,8 @@ export class InterSwitchService {
     const allCategories = res.BillerList?.Category ?? [];
 
     // 2️⃣ Build list of billers (no filtering yet)
-    const billers = allCategories.flatMap((category: any) => {
-      return category.Billers.map((biller: any) => ({
+    const billers = allCategories.flatMap((category: Category) => {
+      return category.Billers.map((biller: Biller) => ({
         id: biller.Id,
         name: biller.Name,
         categoryId: category.Id,
@@ -287,23 +297,24 @@ export class InterSwitchService {
         })
       : billers;
 
-    const validBillers = filteredBillers.filter((b: any) => b.id);
-
+    const validBillers = filteredBillers.filter((b: MappedBiller) => b.id);
     // 3️⃣ Fetch all biller items in parallel (with concurrency control)
     const results = await Promise.allSettled(
-      validBillers.map((biller: any) => this.fetchBillerItemsSafe(biller)),
+      validBillers.map((biller: MappedBiller) =>
+        this.fetchBillerItemsSafe(biller),
+      ),
     );
 
     // 4️⃣ Merge successful results
     for (const r of results) {
       if (r.status === "fulfilled") billingItems.push(...r.value);
     }
-
     return billingItems;
   }
 
   /**
    * Fetches and transforms biller payment items safely.
+   * TODO: Allow items filters
    */
   private async fetchBillerItemsSafe(biller: {
     id: number;
@@ -316,7 +327,7 @@ export class InterSwitchService {
       const items = itemsResp.PaymentItems ?? [];
 
       return items
-        .map((item: any) => {
+        .map((item: PaymentItem) => {
           const amount = Number(item.Amount);
           const displayName = item.Name || item.Id;
 
