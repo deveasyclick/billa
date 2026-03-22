@@ -12,5 +12,7 @@ export function validateProvider(
     throw new Error("VTPASS provider is not configured");
   }
 
-  throw new Error("Invalid provider");
+  if (provider !== "VTPASS" && provider !== "INTERSWITCH") {
+    throw new Error("Invalid provider");
+  }
 }
