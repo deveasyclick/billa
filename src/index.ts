@@ -1,3 +1,7 @@
+import dotenv from "dotenv";
+
+dotenv.config();
+
 // Core client
 export { BillPayClient } from "./core/BillPayClient";
 export type {
