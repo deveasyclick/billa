@@ -1,6 +1,5 @@
 import type { BillerItem } from "../common/types/biller-item";
 import type { PayResponse, Customer } from "../common/types/interswitch";
-import type { BillCategory } from "../common/types/vtpass";
 import {
   InterSwitchService,
   type InterSwitchConfig,
@@ -88,7 +87,7 @@ export class BillPayClient {
       interswitch: this.interswitchService,
       vtpass: this.vtpassService,
     };
-    
+
     // validate requested providers are configured
     validateProvider(primary, services);
     if (fallback) {
@@ -172,7 +171,7 @@ export class BillPayClient {
    * If provider is 'BOTH', returns combined plans from both providers
    */
   async getPlans(options?: {
-    category?: BillCategory;
+    category?: string;
     provider?: ProviderType | "BOTH";
     filters?: Record<string, string[]>;
     forceRefresh?: boolean;
