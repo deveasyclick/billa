@@ -1,0 +1,76 @@
+import { BillPayClient } from "../../src";
+
+async function main() {
+  console.log("==========================================");
+  console.log("   BillPay SDK Integration Example        ");
+  console.log("==========================================");
+
+  // Initialize the main client with both InterSwitch and VTPass
+  // In a real application, you would use actual environment variables here.
+  const client = new BillPayClient({
+    interswitch: {
+      clientId: process.env.INTERSWITCH_CLIENT_ID || "dummy_client_id",
+      secretKey: process.env.INTERSWITCH_SECRET_KEY || "dummy_secret_key",
+      terminalId: process.env.INTERSWITCH_TERMINAL_ID || "dummy_terminal_id",
+      apiBaseUrl:
+        process.env.INTERSWITCH_API_BASE_URL ||
+        "https://sandbox.quickteller.com",
+      authUrl:
+        process.env.INTERSWITCH_AUTH_URL ||
+        "https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken",
+      paymentBaseUrl:
+        process.env.INTERSWITCH_PAYMENT_BASE_URL ||
+        "https://sandbox.quickteller.com",
+      merchantCode:
+        process.env.INTERSWITCH_MERCHANT_CODE || "dummy_merchant_code",
+      paymentReferencePrefix: "BPY_",
+    },
+    vtpass: {
+      apiKey: process.env.VTPASS_APIKEY || "dummy_api_key",
+      secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
+      apiBaseUrl:
+        process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
+      publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
+    },
+  });
+
+  // You can set provider preferences (e.g., Primary: INTERSWITCH, Fallback: VTPASS)
+  client.setProviderPreference("INTERSWITCH", "VTPASS");
+  console.log(
+    "\n[1] Providers configured. Primary: INTERSWITCH, Fallback: VTPASS",
+  );
+
+  try {
+    // -------------------------------------------------------------
+    // Example 1: Fetching Billing Plans
+    // -------------------------------------------------------------
+    console.log("\n[2] Fetching plans from both providers...");
+    try {
+      const plans = await client.getPlans({
+        provider: "VTPASS",
+        // filter by category and biller name
+        filters: {
+          vtpass: {
+            DATA: ["GLO Data"],
+          },
+          interswitch: {
+            "Mobile/Recharge": ["WAEC RESULT CHECKING"],
+          },
+        },
+      });
+      console.log(`Successfully fetched ${plans.length} airtime plans.`);
+      console.log(plans.length, plans);
+    } catch (fetchErr: any) {
+      console.log(`Fetching plans failed: ${fetchErr.message}`);
+    }
+  } catch (err: any) {
+    console.error("\n[Example Error]", err.message);
+  }
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.error(err);
+    process.exit(1);
+  });
