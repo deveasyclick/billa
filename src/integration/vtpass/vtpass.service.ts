@@ -140,15 +140,21 @@ export class VTPassService {
   private async fetchPlans(
     filters?: Record<string, string[]>,
   ): Promise<BillerItem[]> {
+    if (filters && Object.keys(filters).length === 0) {
+      return [];
+    }
     const plans: BillerItem[] = [];
     // retrieve categories from VTpass and iterate
     const categoriesResp = await this.getCategories();
     for (const cat of categoriesResp.content) {
       const category = cat.identifier.toUpperCase();
-      if (filters) {
-        const allowed = filters[category];
-        if (!allowed) continue;
-      }
+
+      if (filters && !(category in filters)) continue;
+      const billers = filters?.[category];
+
+      const allowAllBillers = !billers || billers.length === 0;
+
+      const normalizedBillers = billers?.map((b) => b.toLowerCase());
 
       const requiresValidation =
         category === "ELECTRICITY" ||
@@ -157,6 +163,17 @@ export class VTPassService {
 
       const servicesResp = await this.getServices(cat.identifier);
       for (const svc of servicesResp.content) {
+        if (!allowAllBillers) {
+          const name = svc.name.toLowerCase();
+          const id = svc.serviceID.toLowerCase();
+
+          if (
+            !normalizedBillers!.includes(name) &&
+            !normalizedBillers!.includes(id)
+          ) {
+            continue;
+          }
+        }
         // if product_type is flexible, it means it has variations
         if (svc.product_type === "flexible") {
           plans.push({
@@ -210,17 +227,7 @@ export class VTPassService {
       }
     }
 
-    if (!filters || Object.keys(filters).length === 0) {
-      return plans;
-    }
-
-    return plans.filter((p) => {
-      const allowed = filters[p.category];
-      if (!allowed) return false;
-
-      if (allowed.length === 0) return true; // return all billers
-      return allowed.includes(p.billerName) || allowed.includes(p.billerId);
-    });
+    return plans;
   }
 
   async pay(
