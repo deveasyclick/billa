@@ -4,9 +4,9 @@ import type {
   Customer,
   InterSwitchConfig,
 } from "../common/types/interswitch";
-import type { BillCategory } from "../common/types/vtpass";
 import { InterSwitchService } from "../integration/interswitch/interswitch.service";
 import { InterswitchProvider } from "../providers/interswitch.provider";
+import { type BillPayCategory } from "../common/types";
 
 /**
  * Configuration for the single-provider Interswitch client.
@@ -32,12 +32,19 @@ export class InterswitchClient {
    * category to limit the results; this is translated into the generic filter
    * object used by {@link InterSwitchService.getPlans}.
    */
-  async getPlans(category?: BillCategory): Promise<BillerItem[]> {
+  async getPlans(category?: string): Promise<BillerItem[]> {
     if (category) {
       // send empty array for category to indicate "all items in this category"
       return this.service.getPlans({ filters: { [category]: [] } });
     }
     return this.service.getPlans();
+  }
+
+  /**
+   * Get available bill categories from InterSwitch.
+   */
+  async getCategories(): Promise<BillPayCategory[]> {
+    return this.provider.listCategories();
   }
 
   /**

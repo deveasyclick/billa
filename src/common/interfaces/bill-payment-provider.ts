@@ -1,3 +1,4 @@
+import type { BillPayCategory } from "../types";
 import type { BillerItem } from "../types/biller-item";
 import type { PayResponse, Customer } from "../types/interswitch";
 
@@ -28,4 +29,10 @@ export interface IBillPaymentProvider {
     forceRefresh?: boolean;
     ttlMs?: number;
   }): Promise<BillerItem[]>;
+
+  /**
+   * Retrieve biller categories exposed by the provider.  Filters and caching
+   * behaviour are passed through to the underlying service.
+   */
+  listCategories(): Promise<BillPayCategory[]>;
 }

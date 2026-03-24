@@ -1,7 +1,11 @@
+import { Providers, type BillPayCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
 import type { Customer, PayResponse } from "../common/types/interswitch";
-import type { BillCategory, VTPassPayPayload } from "../common/types/vtpass";
+import type {
+  VTPassBillCategory,
+  VTPassPayPayload,
+} from "../common/types/vtpass";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
 
 interface VTPassPaymentInput {
@@ -20,7 +24,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   private buildVtpassPayload(
     payment: VTPassPaymentInput,
     item: BillerItem,
-    category: BillCategory,
+    category: VTPassBillCategory,
   ): VTPassPayPayload {
     switch (category) {
       case "AIRTIME":
@@ -75,7 +79,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     const vtpassPayload: VTPassPayPayload = this.buildVtpassPayload(
       payment,
       item,
-      item.category,
+      item.category as VTPassBillCategory,
     );
 
     let tx = await this.vtpassService.pay(vtpassPayload);
@@ -139,6 +143,15 @@ export class VTPassProvider implements IBillPaymentProvider {
     ttlMs?: number;
   }): Promise<BillerItem[]> {
     return this.vtpassService.getPlans(options);
+  }
+
+  async listCategories(): Promise<BillPayCategory[]> {
+    const res = await this.vtpassService.getCategories();
+    return (res.content || []).map((cat) => ({
+      id: cat.identifier,
+      name: cat.name,
+      provider: Providers.VTPASS,
+    }));
   }
 
   async validateCustomer(

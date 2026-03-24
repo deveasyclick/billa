@@ -16,7 +16,7 @@ export type {
   BillerItem,
   PayObject,
   ProviderResult,
-  BillCategory,
+  BillPayCategory,
   VTPassVariation,
   GetVTPassVariationsResponse,
   VTPassCategory,

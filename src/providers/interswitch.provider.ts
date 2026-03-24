@@ -1,3 +1,4 @@
+import { Providers, type BillPayCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
 import type { Customer, PayResponse } from "../common/types/interswitch";
@@ -91,6 +92,15 @@ export class InterswitchProvider implements IBillPaymentProvider {
     ttlMs?: number;
   }): Promise<BillerItem[]> {
     return this.interswitchService.getPlans(options);
+  }
+
+  async listCategories(): Promise<BillPayCategory[]> {
+    const res = await this.interswitchService.getBillerCategories();
+    return (res.BillerCategories || []).map((cat) => ({
+      id: String(cat.Id),
+      name: cat.Name,
+      provider: Providers.INTERSWITCH,
+    }));
   }
 
   async validateCustomer(

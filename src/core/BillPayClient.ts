@@ -1,4 +1,8 @@
-import type { BillerItem } from "../common/types/biller-item";
+import {
+  Providers,
+  type BillerItem,
+  type BillPayCategory,
+} from "../common/types";
 import type { PayResponse, Customer } from "../common/types/interswitch";
 import {
   InterSwitchService,
@@ -38,6 +42,7 @@ export interface ValidateCustomerRequest {
   provider?: ProviderType;
 }
 
+// TODO: Should this use providers instead of services?
 export class BillPayClient {
   private readonly interswitchService?: InterSwitchService;
   private readonly vtpassService?: VTPassService;
@@ -249,5 +254,70 @@ export class BillPayClient {
     throw new Error(
       `Payment failed across all providers. Last error: ${lastError?.message || lastError}`,
     );
+  }
+
+  /**
+   * Get available bill categories.
+   * If no provider is specified, returns categories from primary provider.
+   * If provider is specified, returns categories from that provider only.
+   * If provider is 'BOTH', returns combined unique categories from both providers.
+   */
+  async listCategories(
+    provider?: ProviderType | "BOTH",
+  ): Promise<BillPayCategory[]> {
+    const targetProvider = provider ?? this.primaryProvider;
+
+    if (targetProvider === "BOTH") {
+      const results: BillPayCategory[][] = [];
+      if (this.interswitchService) {
+        const res = await this.interswitchService.getBillerCategories();
+        results.push(
+          (res.BillerCategories || []).map((cat) => ({
+            id: String(cat.Id),
+            name: cat.Name,
+            provider: Providers.INTERSWITCH,
+          })),
+        );
+      }
+
+      if (this.vtpassService) {
+        const res = await this.vtpassService.getCategories();
+        results.push(
+          (res.content || []).map((cat) => ({
+            id: cat.identifier,
+            name: cat.name,
+            provider: Providers.VTPASS,
+          })),
+        );
+      }
+
+      const allCategories = results.flat();
+      // Remove duplicates by ID
+      const seen = new Set<string>();
+      return allCategories.filter((cat) => {
+        if (seen.has(cat.id)) return false;
+        seen.add(cat.id);
+        return true;
+      });
+    }
+
+    if (targetProvider === "INTERSWITCH") {
+      validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
+      const res = await this.interswitchService!.getBillerCategories();
+      return (res.BillerCategories || []).map((cat) => ({
+        id: String(cat.Id),
+        name: cat.Name,
+        provider: Providers.INTERSWITCH,
+      }));
+    }
+
+    // VTPASS path
+    validateProvider("VTPASS", { vtpass: this.vtpassService });
+    const res = await this.vtpassService!.getCategories();
+    return (res.content || []).map((cat) => ({
+      id: cat.identifier,
+      name: cat.name,
+      provider: Providers.VTPASS,
+    }));
   }
 }

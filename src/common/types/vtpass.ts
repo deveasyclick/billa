@@ -1,4 +1,9 @@
-export type BillCategory = 'AIRTIME' | 'DATA' | 'TV' | 'ELECTRICITY' | 'GAMING';
+export type VTPassBillCategory =
+  | "AIRTIME"
+  | "DATA"
+  | "TV"
+  | "ELECTRICITY"
+  | "GAMING";
 
 interface CommissionDetails {
   amount: number | null;
@@ -106,8 +111,7 @@ export interface VTPassVerifyCustomerPayload {
   serviceID: string; // ikeja-electric
 }
 
-export interface VTPassVerifyMeterNoPayload
-  extends VTPassVerifyCustomerPayload {
+export interface VTPassVerifyMeterNoPayload extends VTPassVerifyCustomerPayload {
   type: string; // prepaid or postpaid
 }
 
@@ -143,7 +147,7 @@ export interface VTPassBuyElectricityPayload extends VTPassBuyPayload {
 }
 
 export type PayWithVtPassPayload = {
-  category: BillCategory;
+  category: VTPassBillCategory;
   request_id: string;
   serviceID: string;
   phone: string;

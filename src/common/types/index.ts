@@ -1,7 +1,7 @@
 export type { BillerItem } from "./biller-item";
+export type { BillPayCategory } from "./category";
 export type { PayObject, ProviderResult } from "./payment";
 export type {
-  BillCategory,
   VTPassVariation,
   GetVTPassVariationsResponse,
   VTPassCategory,
@@ -35,3 +35,10 @@ export type {
   TransactionResponse,
   ConfirmTransactionResponse,
 } from "./interswitch";
+
+export const Providers = {
+  INTERSWITCH: "INTERSWITCH",
+  VTPASS: "VTPASS",
+} as const;
+
+export type Provider = (typeof Providers)[keyof typeof Providers];
