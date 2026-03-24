@@ -296,7 +296,7 @@ export class InterSwitchService {
           if (list.length === 0) return true; // return all billers
 
           // allow match by biller name or id string
-          return list.includes(biller.name) || list.includes(String(biller.id));
+          return list.includes(biller.name);
         })
       : billers;
     const validBillers = filteredBillers.filter((b: MappedBiller) => b.id);

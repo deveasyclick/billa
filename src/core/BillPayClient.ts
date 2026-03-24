@@ -169,35 +169,59 @@ export class BillPayClient {
    * If no provider is specified, returns plans from primary provider
    * If provider is specified, returns plans from that provider only
    * If provider is 'BOTH', returns combined plans from both providers
+   * It allows filtering by biller name
    */
   async getPlans(options?: {
     provider?: ProviderType | "BOTH";
-    filters?: Record<string, string[]>;
+    filters?: {
+      interswitch?: Record<string, string[]>;
+      vtpass?: Record<string, string[]>;
+    };
     forceRefresh?: boolean;
     ttlMs?: number;
   }): Promise<BillerItem[]> {
     const { provider, filters, forceRefresh, ttlMs } = options || {};
 
     const targetProvider = provider ?? this.primaryProvider;
-    const serviceOpts = { filters, forceRefresh, ttlMs };
 
     if (targetProvider === "BOTH") {
       const results: BillerItem[][] = [];
       if (this.interswitchService) {
-        results.push(await this.interswitchService.getPlans(serviceOpts));
+        results.push(
+          await this.interswitchService.getPlans({
+            filters: filters?.interswitch,
+            forceRefresh,
+            ttlMs,
+          }),
+        );
       }
       if (this.vtpassService) {
-        results.push(await this.vtpassService.getPlans(serviceOpts));
+        results.push(
+          await this.vtpassService.getPlans({
+            filters: filters?.vtpass,
+            forceRefresh,
+            ttlMs,
+          }),
+        );
       }
       return results.flat();
     }
 
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      return this.interswitchService!.getPlans(serviceOpts);
+      return this.interswitchService!.getPlans({
+        filters: filters?.interswitch,
+        forceRefresh,
+        ttlMs,
+      });
     }
 
-    return this.vtpassService!.getPlans(serviceOpts);
+    validateProvider("VTPASS", { vtpass: this.vtpassService });
+    return this.vtpassService!.getPlans({
+      filters: filters?.vtpass,
+      forceRefresh,
+      ttlMs,
+    });
   }
 
   /**
