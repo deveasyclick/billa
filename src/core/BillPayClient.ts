@@ -164,11 +164,6 @@ export class BillPayClient {
     );
   }
 
-  private filterCategory(plans: BillerItem[], category?: string): BillerItem[] {
-    return category
-      ? plans.filter((p) => p.category.toUpperCase() === category.toUpperCase())
-      : plans;
-  }
   /**
    * Get available billing plans
    * If no provider is specified, returns plans from primary provider
@@ -176,13 +171,12 @@ export class BillPayClient {
    * If provider is 'BOTH', returns combined plans from both providers
    */
   async getPlans(options?: {
-    category?: string;
     provider?: ProviderType | "BOTH";
     filters?: Record<string, string[]>;
     forceRefresh?: boolean;
     ttlMs?: number;
   }): Promise<BillerItem[]> {
-    const { category, provider, filters, forceRefresh, ttlMs } = options || {};
+    const { provider, filters, forceRefresh, ttlMs } = options || {};
 
     const targetProvider = provider ?? this.primaryProvider;
     const serviceOpts = { filters, forceRefresh, ttlMs };
@@ -195,24 +189,15 @@ export class BillPayClient {
       if (this.vtpassService) {
         results.push(await this.vtpassService.getPlans(serviceOpts));
       }
-      const allPlans = results.flat();
-      return this.filterCategory(allPlans, category);
+      return results.flat();
     }
 
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      return this.filterCategory(
-        await this.interswitchService!.getPlans(serviceOpts),
-        category,
-      );
+      return this.interswitchService!.getPlans(serviceOpts);
     }
 
-    // VTPASS path
-    validateProvider("VTPASS", { vtpass: this.vtpassService });
-    return this.filterCategory(
-      await this.vtpassService!.getPlans(serviceOpts),
-      category,
-    );
+    return this.vtpassService!.getPlans(serviceOpts);
   }
 
   /**
