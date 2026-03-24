@@ -47,7 +47,7 @@ export interface VTPassService {
   minimium_amount: string; // e.g "1"
   maximum_amount: string; // e.g "1000000"
   convinience_fee: string; // e.g "0 %"
-  product_type: string; // e.g "fix"
+  product_type: "fix" | "flexible"; // e.g "fix"
   image: string; // e.g "https://sandbox.vtpass.com/resources/products/200X200/Airtel-Data.jpg";
 }
 

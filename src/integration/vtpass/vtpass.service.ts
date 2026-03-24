@@ -1,5 +1,4 @@
 import type {
-  BillCategory,
   GetVTPassCategoryResponse,
   GetVTPassServiceResponse,
   GetVTPassVariationsResponse,
@@ -142,18 +141,43 @@ export class VTPassService {
     filters?: Record<string, string[]>,
   ): Promise<BillerItem[]> {
     const plans: BillerItem[] = [];
-
     // retrieve categories from VTpass and iterate
     const categoriesResp = await this.getCategories();
     for (const cat of categoriesResp.content) {
-      const category = this.mapCategory(cat.identifier);
-      if (!category) continue; // skip unsupported types
+      const category = cat.identifier.toUpperCase();
+      if (filters) {
+        const allowed = filters[category];
+        if (!allowed) continue;
+      }
+
+      const requiresValidation =
+        category === "ELECTRICITY" ||
+        category === "TV" ||
+        category === "GAMING";
 
       const servicesResp = await this.getServices(cat.identifier);
       for (const svc of servicesResp.content) {
+        // if product_type is flexible, it means it has variations
+        if (svc.product_type === "flexible") {
+          plans.push({
+            category,
+            billerName: svc.name,
+            provider: "VTPASS",
+            billerId: svc.serviceID,
+            paymentCode: svc.serviceID,
+            name: svc.name,
+            amount: 0,
+            amountType: 0,
+            active: true,
+            image: svc.image,
+            requiresValidation,
+          });
+          continue;
+        }
+
         const variants = await this.getServiceVariants(svc.serviceID);
         if (variants && variants.length > 0) {
-          for (const variant of variants as any) {
+          for (const variant of variants) {
             plans.push({
               category,
               billerName: svc.name,
@@ -165,7 +189,7 @@ export class VTPassService {
               amountType: 0,
               active: true,
               image: svc.image,
-              requiresValidation: category === "ELECTRICITY",
+              requiresValidation,
             });
           }
         } else {
@@ -180,7 +204,7 @@ export class VTPassService {
             amountType: 0,
             active: true,
             image: svc.image,
-            requiresValidation: category === "ELECTRICITY",
+            requiresValidation,
           });
         }
       }
@@ -192,32 +216,11 @@ export class VTPassService {
 
     return plans.filter((p) => {
       const allowed = filters[p.category];
-      if (!allowed || allowed.length === 0) return true;
+      if (!allowed) return false;
+
+      if (allowed.length === 0) return true; // return all billers
       return allowed.includes(p.billerName) || allowed.includes(p.billerId);
     });
-  }
-
-  /**
-   * Map VTpass category identifier string to our internal BillCategory.
-   */
-  private mapCategory(identifier: string): BillCategory | null {
-    switch (identifier.toLowerCase()) {
-      case "airtime":
-        return "AIRTIME";
-      case "data":
-        return "DATA";
-      case "tv-subscription":
-      case "tv":
-        return "TV";
-      case "electricity-bill":
-      case "electricity":
-        return "ELECTRICITY";
-      case "betting":
-      case "gaming":
-        return "GAMING";
-      default:
-        return null;
-    }
   }
 
   async pay(
