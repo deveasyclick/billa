@@ -8,12 +8,13 @@ import { VTPassProvider } from "../providers/vtpass.provider";
 import { type BillPayCategory } from "../common/types";
 import type { VTPassBillCategory } from "../common/types/vtpass";
 
+import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
+
 export interface VtpassClientConfig {
   vtpass: VTPassConfig;
 }
 
-// TODO: Should all clients use a common interface and should it be enforced?
-export class VtpassClient {
+export class VtpassClient implements IBillPayClient {
   private readonly service: VTPassService;
   private readonly provider: VTPassProvider;
 
@@ -22,25 +23,21 @@ export class VtpassClient {
     this.provider = new VTPassProvider(this.service);
   }
 
-  async getPlans(category?: VTPassBillCategory): Promise<BillerItem[]> {
+  async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
+    const category = options?.category;
     if (category) {
-      return this.service.getPlans({ filters: { [category]: [] } });
+      return this.service.getPlans({
+        filters: { [category as VTPassBillCategory]: [] },
+      });
     }
     return this.service.getPlans();
   }
 
-  async listCategories(): Promise<BillPayCategory[]> {
+  async getCategories(): Promise<BillPayCategory[]> {
     return this.provider.listCategories();
   }
 
-  async pay(request: {
-    billingItemId: string;
-    paymentReference: string;
-    billerItem: BillerItem;
-    customerId: string;
-    amount: number;
-    plan?: string;
-  }): Promise<PayResponse> {
+  async pay(request: PayRequest): Promise<PayResponse> {
     return this.provider.executePayment(request.billerItem, {
       reference: request.paymentReference,
       amount: request.amount,
@@ -50,11 +47,11 @@ export class VtpassClient {
     });
   }
 
-  async validateCustomer(
-    customerId: string,
-    paymentCode: string,
-    type?: string,
-  ): Promise<Customer> {
-    return this.provider.validateCustomer(customerId, paymentCode, type);
+  async validateCustomer(request: ValidateCustomerRequest): Promise<Customer> {
+    return this.provider.validateCustomer(
+      request.customerId,
+      request.paymentCode,
+      request.type,
+    );
   }
 }

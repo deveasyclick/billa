@@ -8,6 +8,8 @@ import { InterSwitchService } from "../integration/interswitch/interswitch.servi
 import { InterswitchProvider } from "../providers/interswitch.provider";
 import { type BillPayCategory } from "../common/types";
 
+import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
+
 /**
  * Configuration for the single-provider Interswitch client.
  *
@@ -18,7 +20,7 @@ export interface InterswitchClientConfig {
   interswitch: InterSwitchConfig;
 }
 
-export class InterswitchClient {
+export class InterswitchClient implements IBillPayClient {
   private readonly service: InterSwitchService;
   private readonly provider: InterswitchProvider;
 
@@ -28,11 +30,10 @@ export class InterswitchClient {
   }
 
   /**
-   * Fetch available plans from InterSwitch.  You may optionally supply a
-   * category to limit the results; this is translated into the generic filter
-   * object used by {@link InterSwitchService.getPlans}.
+   * Fetch available plans from InterSwitch.
    */
-  async getPlans(category?: string): Promise<BillerItem[]> {
+  async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
+    const category = options?.category;
     if (category) {
       // send empty array for category to indicate "all items in this category"
       return this.service.getPlans({ filters: { [category]: [] } });
@@ -50,14 +51,7 @@ export class InterswitchClient {
   /**
    * Execute a payment using InterSwitch only.
    */
-  async pay(request: {
-    billingItemId: string;
-    paymentReference: string;
-    billerItem: BillerItem;
-    customerId: string;
-    amount: number;
-    plan?: string;
-  }): Promise<PayResponse> {
+  async pay(request: PayRequest): Promise<PayResponse> {
     return this.provider.executePayment(request.billerItem, {
       reference: request.paymentReference,
       amount: request.amount,
@@ -70,11 +64,11 @@ export class InterswitchClient {
   /**
    * Validate a customer against InterSwitch.
    */
-  async validateCustomer(
-    customerId: string,
-    paymentCode: string,
-    type?: string,
-  ): Promise<Customer> {
-    return this.provider.validateCustomer(customerId, paymentCode, type);
+  async validateCustomer(request: ValidateCustomerRequest): Promise<Customer> {
+    return this.provider.validateCustomer(
+      request.customerId,
+      request.paymentCode,
+      request.type,
+    );
   }
 }

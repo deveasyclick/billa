@@ -17,6 +17,7 @@ import {
   type ProviderType,
 } from "../providers/bill-payment-provider.factory";
 import { validateProvider } from "../common/utils/validate-provider";
+import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
 
 export interface BillPayClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */
@@ -25,25 +26,8 @@ export interface BillPayClientConfig {
   vtpass?: VTPassConfig;
 }
 
-export interface PayRequest {
-  billingItemId: string;
-  paymentReference: string;
-  billerItem: BillerItem;
-  customerId: string;
-  amount: number;
-  plan?: string;
-  provider?: ProviderType;
-}
-
-export interface ValidateCustomerRequest {
-  customerId: string;
-  paymentCode: string;
-  type?: string;
-  provider?: ProviderType;
-}
-
 // TODO: Should this use providers instead of services?
-export class BillPayClient {
+export class BillPayClient implements IBillPayClient {
   private readonly interswitchService?: InterSwitchService;
   private readonly vtpassService?: VTPassService;
   private readonly factory: BillPaymentProviderFactory;
@@ -165,31 +149,33 @@ export class BillPayClient {
   }
 
   /**
-   * Get available billing plans
-   * If no provider is specified, returns plans from primary provider
-   * If provider is specified, returns plans from that provider only
-   * If provider is 'BOTH', returns combined plans from both providers
-   * It allows filtering by biller name
+   * Get available billing plans.
    */
-  async getPlans(options?: {
-    provider?: ProviderType | "BOTH";
-    filters?: {
-      interswitch?: Record<string, string[]>;
-      vtpass?: Record<string, string[]>;
-    };
-    forceRefresh?: boolean;
-    ttlMs?: number;
-  }): Promise<BillerItem[]> {
-    const { provider, filters, forceRefresh, ttlMs } = options || {};
+  async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
+    const { provider, filters, forceRefresh, ttlMs, category } = options || {};
 
     const targetProvider = provider ?? this.primaryProvider;
+
+    // logic to handle category filter if provided as a top-level option
+    const activeFilters = { ...filters };
+    if (category) {
+      if (targetProvider === "INTERSWITCH" || targetProvider === "BOTH") {
+        activeFilters.interswitch = {
+          ...activeFilters.interswitch,
+          [category]: [],
+        };
+      }
+      if (targetProvider === "VTPASS" || targetProvider === "BOTH") {
+        activeFilters.vtpass = { ...activeFilters.vtpass, [category]: [] };
+      }
+    }
 
     if (targetProvider === "BOTH") {
       const results: BillerItem[][] = [];
       if (this.interswitchService) {
         results.push(
           await this.interswitchService.getPlans({
-            filters: filters?.interswitch,
+            filters: activeFilters.interswitch,
             forceRefresh,
             ttlMs,
           }),
@@ -198,7 +184,7 @@ export class BillPayClient {
       if (this.vtpassService) {
         results.push(
           await this.vtpassService.getPlans({
-            filters: filters?.vtpass,
+            filters: activeFilters.vtpass,
             forceRefresh,
             ttlMs,
           }),
@@ -210,7 +196,7 @@ export class BillPayClient {
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
       return this.interswitchService!.getPlans({
-        filters: filters?.interswitch,
+        filters: activeFilters.interswitch,
         forceRefresh,
         ttlMs,
       });
@@ -218,7 +204,7 @@ export class BillPayClient {
 
     validateProvider("VTPASS", { vtpass: this.vtpassService });
     return this.vtpassService!.getPlans({
-      filters: filters?.vtpass,
+      filters: activeFilters.vtpass,
       forceRefresh,
       ttlMs,
     });
@@ -249,11 +235,11 @@ export class BillPayClient {
 
         // Success! Return immediately
         return result;
-      } catch (err) {
+      } catch (err: unknown) {
         lastError = err;
         console.warn(
           `Payment via ${providerName} failed:`,
-          (err as any)?.message || err,
+          (err as Error)?.message || err,
         );
         // Continue to next provider on failure
       }
@@ -261,7 +247,7 @@ export class BillPayClient {
 
     // All providers failed
     throw new Error(
-      `Payment failed across all providers. Last error: ${lastError?.message || lastError}`,
+      `Payment failed across all providers. Last error: ${typeof lastError === "object" && lastError !== null && "message" in lastError ? (lastError as Error).message : lastError}`,
     );
   }
 
@@ -271,7 +257,7 @@ export class BillPayClient {
    * If provider is specified, returns categories from that provider only.
    * If provider is 'BOTH', returns combined unique categories from both providers.
    */
-  async listCategories(
+  async getCategories(
     provider?: ProviderType | "BOTH",
   ): Promise<BillPayCategory[]> {
     const targetProvider = provider ?? this.primaryProvider;
