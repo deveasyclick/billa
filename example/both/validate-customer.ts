@@ -58,8 +58,7 @@ async function main() {
           },
         },
       });
-      //TODO: validate interswitch customers
-      console.log(`Successfully fetched ${plans.length} airtime plans.`, plans);
+      console.log(`Successfully fetched ${plans.length} plans.`);
 
       const vtpassPlan = plans.find(
         (plan) =>
@@ -69,12 +68,6 @@ async function main() {
       );
       const interswitchPlan = plans.find(
         (plan) => plan.provider === "INTERSWITCH",
-      );
-      console.log(
-        "vtpass plan",
-        vtpassPlan,
-        "interswitch plan",
-        interswitchPlan,
       );
 
       if (!vtpassPlan) {
@@ -91,13 +84,14 @@ async function main() {
         type: vtpassPlan.type,
         provider: "VTPASS",
       });
-      console.log("vtpass customer info", customerInfo);
 
       const interswitchCustomerInfo = await client.validateCustomer({
-        customerId: "1111111111111",
+        customerId: "01890003338",
         paymentCode: interswitchPlan.paymentCode,
         provider: "INTERSWITCH",
       });
+
+      console.log("vtpass customer info", customerInfo);
       console.log("interswitch customer info", interswitchCustomerInfo);
     } catch (fetchErr: any) {
       console.log(`Validating customer failed: ${fetchErr.message}`);

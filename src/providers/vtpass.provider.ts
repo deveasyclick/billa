@@ -167,16 +167,9 @@ export class VTPassProvider implements IBillPaymentProvider {
     });
 
     return {
-      TerminalId: "",
-      BillerId: 0,
-      PaymentCode: paymentCode,
-      CustomerId: customerId,
-      FullName: response.Customer_Name,
-      Amount: response.commission_details.amount ?? 0,
-      AmountType: 0,
-      AmountTypeDescription: "",
-      Surcharge: 0,
-      ResponseCode: "000",
+      paymentCode,
+      customerId,
+      fullName: response.Customer_Name,
     };
   }
 }

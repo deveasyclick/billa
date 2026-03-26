@@ -95,6 +95,7 @@ export interface InterswitchCustomer {
   AmountType: number;
   AmountTypeDescription: string;
   Surcharge: number;
+  ResponseDescription: string;
 }
 
 export interface InterSwitchConfig {

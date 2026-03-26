@@ -113,6 +113,18 @@ export class InterswitchProvider implements IBillPaymentProvider {
       customerId,
       paymentCode,
     });
-    return response.Customers?.[0] ?? ({} as Customer);
+
+    const [customer] = response.Customers;
+    if (customer.ResponseCode !== "90000") {
+      throw new Error(customer.ResponseDescription);
+    }
+
+    return {
+      paymentCode,
+      customerId,
+      fullName: customer.FullName,
+      amount: customer.Amount,
+      amountType: customer.AmountType,
+    };
   }
 }

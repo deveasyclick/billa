@@ -319,7 +319,6 @@ export class VTPassService {
         },
       },
     );
-
     if (data.code !== "000" || (data.content as { error: string }).error) {
       throw new Error(
         `Failed to validate customer: ${(data.content as { error: string }).error}`,
