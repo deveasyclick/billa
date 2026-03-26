@@ -45,7 +45,7 @@ async function main() {
   try {
     console.log("\n[2] Fetching categories from both providers...");
     try {
-      const categories = await client.listCategories("VTPASS");
+      const categories = await client.getCategories("BOTH");
       console.log("categories", categories);
     } catch (fetchErr: any) {
       console.log(`Listing categories failed: ${fetchErr.message}`);

@@ -47,14 +47,14 @@ async function main() {
     console.log("\n[2] Fetching plans from both providers...");
     try {
       const plans = await client.getPlans({
-        provider: "VTPASS",
+        provider: "BOTH",
         // filter by category and biller name
         filters: {
           vtpass: {
-            DATA: ["GLO Data"],
+            "ELECTRICITY-BILL": [],
           },
           interswitch: {
-            "Mobile/Recharge": ["WAEC RESULT CHECKING"],
+            "Products and Services": ["Momall, A Division Of Media 24"],
           },
         },
       });
