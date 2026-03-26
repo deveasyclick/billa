@@ -1,7 +1,8 @@
 import { Providers, type BillPayCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
-import type { Customer, PayResponse } from "../common/types/interswitch";
+import type { PayResponse } from "../common/types/interswitch";
+import type { Customer } from "../common/types/payment";
 import type {
   VTPassBillCategory,
   VTPassPayPayload,

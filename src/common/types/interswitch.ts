@@ -51,7 +51,7 @@ export interface PaymentItemsResponse {
 }
 
 export interface ValidateCustomersResponse {
-  Customers: Customer[];
+  Customers: InterswitchCustomer[];
   ResponseCode: string;
   ResponseCodeGrouping: string;
 }
@@ -84,7 +84,7 @@ export interface ConfirmTransactionResponse {
   IsSuccessful: boolean;
 }
 
-export interface Customer {
+export interface InterswitchCustomer {
   TerminalId: string;
   BillerId: number;
   PaymentCode: string;

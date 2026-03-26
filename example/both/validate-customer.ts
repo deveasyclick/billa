@@ -51,7 +51,7 @@ async function main() {
         // filter by category and biller name
         filters: {
           vtpass: {
-            "ELECTRICITY-BILL": [],
+            "ELECTRICITY-BILL": ["Yola Electric Disco Payment - YEDC"],
           },
           interswitch: {
             "Cable TV Bills": ["DAARSAT Communications"],
