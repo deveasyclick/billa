@@ -169,6 +169,40 @@ export class VTPassService {
             continue;
           }
         }
+
+        if (category === "ELECTRICITY-BILL") {
+          plans.push(
+            {
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: svc.serviceID,
+              name: svc.name,
+              amount: 0,
+              amountType: 0,
+              active: true,
+              image: svc.image,
+              type: "prepaid",
+            },
+            {
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: svc.serviceID,
+              name: svc.name,
+              amount: 0,
+              amountType: 0,
+              active: true,
+              image: svc.image,
+              type: "postpaid",
+            },
+          );
+
+          continue;
+        }
+
         // if product_type is flexible, it means it has variations
         if (svc.product_type === "flexible") {
           plans.push({
