@@ -34,7 +34,7 @@ export class VTPassService {
       `${this.config.apiBaseUrl}/service-categories`,
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
         },
       },
     );
@@ -53,7 +53,7 @@ export class VTPassService {
       `${this.config.apiBaseUrl}/services?identifier=${category}`,
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
         },
       },
     );
@@ -74,7 +74,7 @@ export class VTPassService {
       `${this.config.apiBaseUrl}/service-variations?serviceID=${serviceId}`,
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
         },
       },
     );
@@ -264,7 +264,7 @@ export class VTPassService {
       payload,
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
           Authorization: `Bearer ${this.config.secretKey}`,
         },
       },
@@ -292,7 +292,7 @@ export class VTPassService {
       },
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
         },
       },
     );
@@ -314,7 +314,8 @@ export class VTPassService {
       payload,
       {
         headers: {
-          api_key: this.config.apiKey,
+          "API-KEY": this.config.apiKey,
+          "SECRET-KEY": this.config.secretKey,
         },
       },
     );
