@@ -17,7 +17,12 @@ import {
   type ProviderType,
 } from "../providers/bill-payment-provider.factory";
 import { validateProvider } from "../common/utils/validate-provider";
-import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
+import {
+  type IBillPayClient,
+  type PayRequest,
+  type ValidateCustomerRequest,
+  type GetPlansOptions,
+} from "./IBillPayClient";
 
 export interface BillPayClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */
@@ -268,7 +273,6 @@ export class BillPayClient implements IBillPayClient {
         const res = await this.interswitchService.getBillerCategories();
         results.push(
           (res.BillerCategories || []).map((cat) => ({
-            id: String(cat.Id),
             name: cat.Name,
             provider: Providers.INTERSWITCH,
           })),
@@ -279,8 +283,7 @@ export class BillPayClient implements IBillPayClient {
         const res = await this.vtpassService.getCategories();
         results.push(
           (res.content || []).map((cat) => ({
-            id: cat.identifier,
-            name: cat.name,
+            name: cat.identifier.toUpperCase(),
             provider: Providers.VTPASS,
           })),
         );
@@ -290,8 +293,8 @@ export class BillPayClient implements IBillPayClient {
       // Remove duplicates by ID
       const seen = new Set<string>();
       return allCategories.filter((cat) => {
-        if (seen.has(cat.id)) return false;
-        seen.add(cat.id);
+        if (seen.has(cat.name)) return false;
+        seen.add(cat.name);
         return true;
       });
     }
@@ -300,7 +303,6 @@ export class BillPayClient implements IBillPayClient {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
       const res = await this.interswitchService!.getBillerCategories();
       return (res.BillerCategories || []).map((cat) => ({
-        id: String(cat.Id),
         name: cat.Name,
         provider: Providers.INTERSWITCH,
       }));
@@ -310,8 +312,7 @@ export class BillPayClient implements IBillPayClient {
     validateProvider("VTPASS", { vtpass: this.vtpassService });
     const res = await this.vtpassService!.getCategories();
     return (res.content || []).map((cat) => ({
-      id: cat.identifier,
-      name: cat.name,
+      name: cat.identifier.toUpperCase(),
       provider: Providers.VTPASS,
     }));
   }
