@@ -10,5 +10,5 @@ export type BillerItem = {
   amountType: number;
   active: boolean;
   image?: string;
-  requiresValidation: boolean;
+  type?: string; // prepaid or postpaid for VTPASS
 };

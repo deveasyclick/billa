@@ -156,11 +156,6 @@ export class VTPassService {
 
       const normalizedBillers = billers?.map((b) => b.toLowerCase());
 
-      const requiresValidation =
-        category === "ELECTRICITY" ||
-        category === "TV" ||
-        category === "GAMING";
-
       const servicesResp = await this.getServices(cat.identifier);
       for (const svc of servicesResp.content) {
         if (!allowAllBillers) {
@@ -187,7 +182,6 @@ export class VTPassService {
             amountType: 0,
             active: true,
             image: svc.image,
-            requiresValidation,
           });
           continue;
         }
@@ -206,7 +200,6 @@ export class VTPassService {
               amountType: 0,
               active: true,
               image: svc.image,
-              requiresValidation,
             });
           }
         } else {
@@ -221,7 +214,6 @@ export class VTPassService {
             amountType: 0,
             active: true,
             image: svc.image,
-            requiresValidation,
           });
         }
       }
