@@ -66,3 +66,6 @@ export { InterSwitchService } from "./integration/interswitch/interswitch.servic
 export type { InterSwitchConfig } from "./integration/interswitch/interswitch.service";
 export { VTPassService } from "./integration/vtpass/vtpass.service";
 export type { VTPassConfig } from "./integration/vtpass/vtpass.service";
+
+// utils
+export { generateRequestId } from "./common/utils/generateRequestId";
