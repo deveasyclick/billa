@@ -277,9 +277,7 @@ export class VTPassService {
     return data;
   }
 
-  async getTransaction(
-    requestId: string,
-  ): Promise<VTPassTransactionResponse["content"]["transactions"]> {
+  async getTransaction(requestId: string): Promise<VTPassTransactionResponse> {
     const { data } = await this.httpClient.post<VTPassTransactionResponse>(
       `${this.config.apiBaseUrl}/requery`,
       {
@@ -298,7 +296,7 @@ export class VTPassService {
       );
     }
 
-    return data.content.transactions;
+    return data;
   }
 
   async validateCustomer(
