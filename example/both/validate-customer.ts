@@ -64,7 +64,7 @@ async function main() {
         (plan) =>
           plan.provider === "VTPASS" &&
           plan.category === "ELECTRICITY-BILL" &&
-          plan.type === "prepaid",
+          plan.paymentCode === "prepaid",
       );
       const interswitchPlan = plans.find(
         (plan) => plan.provider === "INTERSWITCH",
@@ -80,8 +80,8 @@ async function main() {
 
       const customerInfo = await client.validateCustomer({
         customerId: "1111111111111",
-        paymentCode: vtpassPlan?.paymentCode,
-        type: vtpassPlan.type,
+        paymentCode: vtpassPlan?.billerId,
+        type: vtpassPlan.paymentCode,
         provider: "VTPASS",
       });
 
