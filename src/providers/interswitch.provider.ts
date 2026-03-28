@@ -69,4 +69,20 @@ export class InterswitchProvider implements IBillPaymentProvider {
       amountType: customer.AmountType,
     };
   }
+
+  async confirm(reference: string): Promise<PayResponse> {
+    const resp = await this.interswitchService.confirmTransaction(reference);
+
+    return {
+      paymentRef: reference,
+      amount: resp.ApprovedAmount,
+      metadata: resp.AdditionalInfo,
+      status: (resp.ResponseCodeGrouping === "SUCCESSFUL"
+        ? "success"
+        : resp.ResponseCodeGrouping.toLowerCase()) as
+        | "success"
+        | "pending"
+        | "failed",
+    };
+  }
 }

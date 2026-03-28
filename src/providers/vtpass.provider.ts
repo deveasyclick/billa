@@ -127,4 +127,27 @@ export class VTPassProvider implements IBillPaymentProvider {
       fullName: response.Customer_Name,
     };
   }
+
+  async confirm(reference: string): Promise<PayResponse> {
+    const tx = await this.vtpassService.getTransaction(reference);
+
+    // TODO: add a util to return this shape
+    return {
+      paymentRef: reference,
+      amount: Number(tx.amount),
+      status: (tx.content.transactions.status === "delivered" ||
+      tx.content.transactions.status === "success"
+        ? "success"
+        : tx.content.transactions.status.toLowerCase()) as
+        | "success"
+        | "pending"
+        | "failed",
+      metadata: {
+        customerName: tx.CustomerName,
+        customerAddress: tx.CustomerAddress,
+        units: tx.Units,
+        token: tx.Token,
+      },
+    };
+  }
 }

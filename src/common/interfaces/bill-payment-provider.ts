@@ -27,4 +27,9 @@ export interface IBillPaymentProvider {
    * behaviour are passed through to the underlying service.
    */
   listCategories(): Promise<BillPayCategory[]>;
+
+  /**
+   * Confirm/Requery a transaction.
+   */
+  confirm(reference: string): Promise<PayResponse>;
 }
