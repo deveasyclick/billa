@@ -1,18 +1,10 @@
 import type { BillPayCategory } from "../types";
 import type { BillerItem } from "../types/biller-item";
-import type { PayResponse, Customer } from "../types/interswitch";
+import type { PayRequest } from "../../core";
+import type { Customer, PayResponse } from "../types/payment";
 
 export interface IBillPaymentProvider {
-  executePayment(
-    item: BillerItem,
-    payment: {
-      reference: string;
-      amount: number;
-      customerId?: string;
-      plan?: string;
-      id?: string;
-    },
-  ): Promise<PayResponse>;
+  pay(payload: PayRequest): Promise<PayResponse>;
 
   validateCustomer(
     customerId: string,

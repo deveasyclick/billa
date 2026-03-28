@@ -1,17 +1,19 @@
 import type { BillerItem, BillPayCategory } from "../common/types";
-import type { PayResponse, Customer } from "../common/types/interswitch";
+import type { Customer, PayResponse } from "../common/types/payment";
+import type { VTPassBillCategory } from "../common/types/vtpass";
 import { type ProviderType } from "../providers/bill-payment-provider.factory";
 
 /**
  * Common request structure for a bill payment
  */
 export interface PayRequest {
-  billingItemId: string;
-  paymentReference: string;
-  billerItem: BillerItem;
+  reference: string;
   customerId: string;
   amount: number;
-  plan?: string;
+  paymentCode: string;
+  category: VTPassBillCategory | string;
+  biller: string;
+  type?: string;
   provider?: ProviderType;
 }
 

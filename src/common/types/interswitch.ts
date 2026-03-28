@@ -56,21 +56,12 @@ export interface ValidateCustomersResponse {
   ResponseCodeGrouping: string;
 }
 
-export interface PayResponse {
-  paymentRef: string;
-  amount: number;
-  metadata: Record<string, any>;
-  status: string;
-}
-
 export interface TransactionResponse {
   ResponseCode: string;
-  ResponseCodeGrouping: string;
-  TransactionRef: {
-    Reference: string;
-    ReferenceNumber: number;
-  };
-  Amount: number;
+  ResponseCodeGrouping: "SUCCESSFUL" | "PENDING" | "FAILED";
+  TransactionRef: string;
+  ApprovedAmount: number;
+  AdditionalInfo: Record<string, unknown>;
 }
 
 export interface ConfirmTransactionResponse {
