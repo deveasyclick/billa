@@ -286,6 +286,7 @@ export class VTPassService {
       {
         headers: {
           "API-KEY": this.config.apiKey,
+          "SECRET-KEY": this.config.secretKey,
         },
       },
     );
