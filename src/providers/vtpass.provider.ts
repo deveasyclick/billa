@@ -1,71 +1,68 @@
 import { Providers, type BillPayCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
-import type { PayResponse } from "../common/types/interswitch";
-import type { Customer } from "../common/types/payment";
+import type { Customer, PayResponse } from "../common/types/payment";
 import type {
   VTPassBillCategory,
   VTPassPayPayload,
 } from "../common/types/vtpass";
+import type { PayRequest } from "../core";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
 
-interface VTPassPaymentInput {
-  reference: string;
-  amount: number;
-  customerId?: string;
-  plan?: string;
-  id?: string;
-}
-
+// TODO: set this in config
 const DEFAULT_PHONE_NUMBER = "+2348111111111";
 
 export class VTPassProvider implements IBillPaymentProvider {
   constructor(private readonly vtpassService: VTPassService) {}
 
-  private buildVtpassPayload(
-    payment: VTPassPaymentInput,
-    item: BillerItem,
-    category: VTPassBillCategory,
-  ): VTPassPayPayload {
-    switch (category) {
+  private buildVtpassPayload({
+    reference,
+    category,
+    biller,
+    customerId,
+    amount,
+    paymentCode,
+    type,
+  }: PayRequest): VTPassPayPayload {
+    switch (category as VTPassBillCategory) {
       case "AIRTIME":
         return {
-          request_id: payment.reference,
-          serviceID: item.billerId,
-          phone: payment.customerId || DEFAULT_PHONE_NUMBER,
-          amount: Number(payment.amount),
-          billersCode: item.billerId,
+          request_id: reference,
+          serviceID: biller,
+          phone: customerId,
+          amount: amount,
+          billersCode: paymentCode,
         };
 
       case "DATA":
         return {
-          request_id: payment.reference,
-          serviceID: item.billerId,
-          phone: payment.customerId || DEFAULT_PHONE_NUMBER,
-          variation_code: item.paymentCode,
+          request_id: reference,
+          serviceID: biller,
+          phone: customerId,
+          variation_code: paymentCode,
           billersCode: DEFAULT_PHONE_NUMBER,
-          amount: Number(payment.amount),
+          amount: amount,
         };
 
       case "TV":
         return {
-          request_id: payment.reference,
-          serviceID: item.billerId,
+          request_id: reference,
+          serviceID: biller,
           phone: DEFAULT_PHONE_NUMBER,
-          variation_code: item.paymentCode,
-          billersCode: payment.customerId || "",
-          subscription_type: "change",
-          amount: Number(payment.amount),
+          variation_code: paymentCode,
+          billersCode: customerId,
+          subscription_type: type ?? "change",
+          amount: amount,
         };
 
-      case "ELECTRICITY":
+      case "ELECTRICITY-BILL":
         return {
-          request_id: payment.reference,
-          serviceID: item.billerId,
+          request_id: reference,
+          serviceID: biller,
           phone: DEFAULT_PHONE_NUMBER,
-          variation_code: payment.plan || "prepaid",
-          billersCode: payment.customerId || "",
-          amount: Number(payment.amount),
+          variation_code: paymentCode,
+          billersCode: customerId,
+          amount: amount,
         };
 
       default:
@@ -125,7 +122,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     });
 
     return {
-      paymentCode,
+      paymentCode: paymentCode,
       customerId,
       fullName: response.Customer_Name,
     };
