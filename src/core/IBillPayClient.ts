@@ -64,4 +64,9 @@ export interface IBillPayClient {
    * Validate a customer ID against a service (e.g. meter number, smartcard id).
    */
   validateCustomer(request: ValidateCustomerRequest): Promise<Customer>;
+
+  /**
+   * Confirm/Requery a transaction.
+   */
+  confirmTransaction(reference: string, provider?: ProviderType): Promise<PayResponse>;
 }

@@ -66,4 +66,11 @@ export class InterswitchClient implements IBillPayClient {
       request.type,
     );
   }
+
+  /**
+   * Confirm a payment with InterSwitch.
+   */
+  async confirmTransaction(reference: string): Promise<PayResponse> {
+    return this.provider.confirm(reference);
+  }
 }

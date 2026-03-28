@@ -1,5 +1,5 @@
 import type { BillerItem } from "../common/types/biller-item";
-import type { PayResponse, Customer } from "../common/types/interswitch";
+import type { PayResponse, Customer } from "../common/types/payment";
 import {
   VTPassService,
   type VTPassConfig,
@@ -38,13 +38,7 @@ export class VtpassClient implements IBillPayClient {
   }
 
   async pay(request: PayRequest): Promise<PayResponse> {
-    return this.provider.executePayment(request.billerItem, {
-      reference: request.paymentReference,
-      amount: request.amount,
-      customerId: request.customerId,
-      plan: request.plan,
-      id: request.billingItemId,
-    });
+    return this.provider.pay(request);
   }
 
   async validateCustomer(request: ValidateCustomerRequest): Promise<Customer> {
@@ -53,5 +47,12 @@ export class VtpassClient implements IBillPayClient {
       request.paymentCode,
       request.type,
     );
+  }
+
+  /**
+   * Confirm a payment with VTpass.
+   */
+  async confirmTransaction(reference: string): Promise<PayResponse> {
+    return this.provider.confirm(reference);
   }
 }

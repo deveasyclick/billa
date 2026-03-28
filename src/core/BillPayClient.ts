@@ -233,10 +233,9 @@ export class BillPayClient implements IBillPayClient {
         return result;
       } catch (err: unknown) {
         lastError = err;
-        console.warn(
-          `Payment via ${providerName} failed:`,
-          (err as any).response?.data ?? (err as Error)?.message ?? err,
-        );
+        const errorMessage =
+          (err as any).response?.data || (err as Error)?.message || err;
+        console.warn(`Payment via ${providerName} failed:`, errorMessage);
         // Continue to next provider on failure
       }
     }
@@ -306,5 +305,23 @@ export class BillPayClient implements IBillPayClient {
       name: cat.identifier.toUpperCase(),
       provider: Providers.VTPASS,
     }));
+  }
+
+  /**
+   * Confirm/Requery a transaction.
+   */
+  async confirmTransaction(
+    reference: string,
+    provider?: ProviderType,
+  ): Promise<PayResponse> {
+    const targetProvider = provider ?? this.primaryProvider;
+
+    validateProvider(targetProvider, {
+      interswitch: this.interswitchService,
+      vtpass: this.vtpassService,
+    });
+
+    const providerInstance = this.factory.getProvider(targetProvider);
+    return providerInstance.confirm(reference);
   }
 }
