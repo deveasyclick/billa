@@ -2,7 +2,7 @@ export type VTPassBillCategory =
   | "AIRTIME"
   | "DATA"
   | "TV"
-  | "ELECTRICITY"
+  | "ELECTRICITY-BILL"
   | "GAMING";
 
 interface CommissionDetails {
@@ -88,7 +88,10 @@ export interface VTPassTransactionResponse {
   requestId: string;
   amount: number;
   transaction_date: string; // ISO date string
-  purchased_code: string;
+  CustomerName?: string;
+  CustomerAddress?: string;
+  Units?: string;
+  Token?: string;
 }
 
 export interface VTPassCustomer {

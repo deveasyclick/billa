@@ -177,26 +177,24 @@ export class VTPassService {
               billerName: svc.name,
               provider: "VTPASS",
               billerId: svc.serviceID,
-              paymentCode: svc.serviceID,
+              paymentCode: "prepaid",
               name: svc.name,
               amount: 0,
               amountType: 0,
               active: true,
               image: svc.image,
-              type: "prepaid",
             },
             {
               category,
               billerName: svc.name,
               provider: "VTPASS",
               billerId: svc.serviceID,
-              paymentCode: svc.serviceID,
+              paymentCode: "postpaid",
               name: svc.name,
               amount: 0,
               amountType: 0,
               active: true,
               image: svc.image,
-              type: "postpaid",
             },
           );
 
@@ -256,16 +254,14 @@ export class VTPassService {
     return plans;
   }
 
-  async pay(
-    payload: VTPassPayPayload,
-  ): Promise<VTPassTransactionResponse["content"]["transactions"]> {
+  async pay(payload: VTPassPayPayload): Promise<VTPassTransactionResponse> {
     const { data } = await this.httpClient.post<VTPassTransactionResponse>(
       `${this.config.apiBaseUrl}/pay`,
       payload,
       {
         headers: {
           "API-KEY": this.config.apiKey,
-          Authorization: `Bearer ${this.config.secretKey}`,
+          "SECRET-KEY": this.config.secretKey,
         },
       },
     );
@@ -278,8 +274,7 @@ export class VTPassService {
         `Failed to buy ${payload.serviceID}: ${data?.response_description}`,
       );
     }
-
-    return data.content.transactions;
+    return data;
   }
 
   async getTransaction(
