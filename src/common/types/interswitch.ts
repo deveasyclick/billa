@@ -66,13 +66,10 @@ export interface TransactionResponse {
 
 export interface ConfirmTransactionResponse {
   ResponseCode: string;
-  ResponseCodeGrouping: string;
-  Amount: number;
-  TransactionRef: {
-    Reference: string;
-    ReferenceNumber: number;
-  };
-  IsSuccessful: boolean;
+  ResponseCodeGrouping: "SUCCESSFUL" | "PENDING" | "FAILED";
+  TransactionRef: string;
+  ApprovedAmount: number;
+  AdditionalInfo: Record<string, unknown>;
 }
 
 export interface InterswitchCustomer {
