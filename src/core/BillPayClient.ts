@@ -3,7 +3,6 @@ import {
   type BillerItem,
   type BillPayCategory,
 } from "../common/types";
-import type { PayResponse, Customer } from "../common/types/interswitch";
 import {
   InterSwitchService,
   type InterSwitchConfig,
@@ -23,6 +22,7 @@ import {
   type ValidateCustomerRequest,
   type GetPlansOptions,
 } from "./IBillPayClient";
+import type { Customer, PayResponse } from "../common/types/payment";
 
 export interface BillPayClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */
@@ -227,16 +227,7 @@ export class BillPayClient implements IBillPayClient {
     for (const providerName of providers) {
       try {
         const providerInstance = this.factory.getProvider(providerName);
-        const result = await providerInstance.executePayment(
-          request.billerItem,
-          {
-            reference: request.paymentReference,
-            amount: request.amount,
-            customerId: request.customerId,
-            plan: request.plan,
-            id: request.billingItemId,
-          },
-        );
+        const result = await providerInstance.pay(request);
 
         // Success! Return immediately
         return result;
@@ -244,7 +235,7 @@ export class BillPayClient implements IBillPayClient {
         lastError = err;
         console.warn(
           `Payment via ${providerName} failed:`,
-          (err as Error)?.message || err,
+          (err as any).response?.data ?? (err as Error)?.message ?? err,
         );
         // Continue to next provider on failure
       }

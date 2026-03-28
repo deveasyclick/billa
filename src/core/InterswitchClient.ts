@@ -1,14 +1,15 @@
 import type { BillerItem } from "../common/types/biller-item";
-import type {
-  PayResponse,
-  Customer,
-  InterSwitchConfig,
-} from "../common/types/interswitch";
+import type { InterSwitchConfig } from "../common/types/interswitch";
 import { InterSwitchService } from "../integration/interswitch/interswitch.service";
 import { InterswitchProvider } from "../providers/interswitch.provider";
 import { type BillPayCategory } from "../common/types";
-
-import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
+import {
+  type IBillPayClient,
+  type PayRequest,
+  type ValidateCustomerRequest,
+  type GetPlansOptions,
+} from "./IBillPayClient";
+import type { Customer, PayResponse } from "../common/types/payment";
 
 /**
  * Configuration for the single-provider Interswitch client.
@@ -52,13 +53,7 @@ export class InterswitchClient implements IBillPayClient {
    * Execute a payment using InterSwitch only.
    */
   async pay(request: PayRequest): Promise<PayResponse> {
-    return this.provider.executePayment(request.billerItem, {
-      reference: request.paymentReference,
-      amount: request.amount,
-      customerId: request.customerId,
-      plan: request.plan,
-      id: request.billingItemId,
-    });
+    return this.provider.pay(request);
   }
 
   /**

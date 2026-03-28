@@ -73,67 +73,25 @@ export class VTPassProvider implements IBillPaymentProvider {
     }
   }
 
-  async executePayment(
-    item: BillerItem,
-    payment: VTPassPaymentInput,
-  ): Promise<PayResponse> {
-    const vtpassPayload: VTPassPayPayload = this.buildVtpassPayload(
-      payment,
-      item,
-      item.category as VTPassBillCategory,
-    );
+  async pay(payload: PayRequest): Promise<PayResponse> {
+    const vtpassPayload: VTPassPayPayload = this.buildVtpassPayload(payload);
 
-    let tx = await this.vtpassService.pay(vtpassPayload);
-
-    // Retry loop for confirmation
-    const maxRetries = 3;
-    const delayMs = 3000;
-
-    for (let attemptCount = 0; attemptCount < maxRetries; attemptCount++) {
-      try {
-        // Check if delivered/successful
-        if (tx.status === "delivered") {
-          return {
-            paymentRef: payment.reference,
-            amount: Number(tx.amount),
-            status: "SUCCESS",
-            metadata: {
-              transactionId: tx.transactionId,
-              extras: (tx as any).extras,
-            },
-          };
-        }
-
-        // Check if failed
-        if (tx.status === "failed") {
-          throw new Error("Payment failed at provider");
-        }
-
-        // Only retry if pending
-        if (tx.status === "pending") {
-          if (attemptCount < maxRetries - 1) {
-            // Wait before retry
-            await new Promise((resolve) => setTimeout(resolve, delayMs));
-            tx = await this.vtpassService.getTransaction(payment.reference);
-            continue;
-          }
-        }
-
-        // Exit if not pending
-        break;
-      } catch {
-        // ignore and allow retry
-      }
-    }
-
-    // If still pending after retries, return pending status
+    const tx = await this.vtpassService.pay(vtpassPayload);
     return {
-      paymentRef: payment.reference,
-      amount: Number(payment.amount),
-      status: "PENDING",
+      paymentRef: payload.reference,
+      amount: Number(tx.amount),
+      status: (tx.content.transactions.status === "delivered" ||
+      tx.content.transactions.status === "success"
+        ? "success"
+        : tx.content.transactions.status.toLowerCase()) as
+        | "success"
+        | "pending"
+        | "failed",
       metadata: {
-        message: "Transaction pending confirmation",
-        transactionStatus: tx.status,
+        customerName: tx.CustomerName,
+        customerAddress: tx.CustomerAddress,
+        units: tx.Units,
+        token: tx.Token,
       },
     };
   }
