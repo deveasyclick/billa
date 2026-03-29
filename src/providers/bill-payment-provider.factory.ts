@@ -6,33 +6,40 @@ import { VTPassProvider } from "./vtpass.provider";
 
 export type ProviderType = "INTERSWITCH" | "VTPASS";
 
-/**
- * Factory that constructs a provider wrapper around a configured service.
- *
- * Both services are optional; callers are responsible for providing at least
- * one of them when instantiating the class.  The factory will throw if a
- * provider is requested for which no service was supplied.
- */
 export class BillPaymentProviderFactory {
+  private providers: Partial<Record<ProviderType, IBillPaymentProvider>> = {};
   constructor(
     private readonly interswitchService?: InterSwitchService,
     private readonly vtpassService?: VTPassService,
   ) {}
 
   getProvider(providerName: ProviderType): IBillPaymentProvider {
+    if (this.providers[providerName]) {
+      return this.providers[providerName]!;
+    }
+
+    let provider: IBillPaymentProvider;
+
     switch (providerName) {
       case "INTERSWITCH":
         if (!this.interswitchService) {
           throw new Error("INTERSWITCH provider not configured");
         }
-        return new InterswitchProvider(this.interswitchService);
+        provider = new InterswitchProvider(this.interswitchService);
+        break;
+
       case "VTPASS":
         if (!this.vtpassService) {
           throw new Error("VTPASS provider not configured");
         }
-        return new VTPassProvider(this.vtpassService);
+        provider = new VTPassProvider(this.vtpassService);
+        break;
+
       default:
         throw new Error(`Unknown provider: ${providerName}`);
     }
+
+    this.providers[providerName] = provider;
+    return provider;
   }
 }
