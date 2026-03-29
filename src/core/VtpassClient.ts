@@ -25,12 +25,22 @@ export class VtpassClient implements IBillPayClient {
 
   async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
     const category = options?.category;
-    if (category) {
+    const filters = options?.filters?.vtpass;
+
+    if (category || filters) {
       return this.service.getPlans({
-        filters: { [category as VTPassBillCategory]: [] },
+        filters: {
+          ...(category && { [category as VTPassBillCategory]: [] }),
+          ...filters,
+        },
+        forceRefresh: options?.forceRefresh,
+        ttlMs: options?.ttlMs,
       });
     }
-    return this.service.getPlans();
+    return this.service.getPlans({
+      forceRefresh: options?.forceRefresh,
+      ttlMs: options?.ttlMs,
+    });
   }
 
   async getCategories(): Promise<BillPayCategory[]> {
