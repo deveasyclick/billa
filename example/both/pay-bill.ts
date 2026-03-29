@@ -1,38 +1,7 @@
-import { BillPayClient, generateRequestId } from "../../src";
+import { generateRequestId } from "../../src";
+import { billPayClient as client } from "../client";
 
-async function main() {
-  console.log("==========================================");
-  console.log("   BillPay SDK Integration Example        ");
-  console.log("==========================================");
-
-  // Initialize the main client with both InterSwitch and VTPass
-  // In a real application, you would use actual environment variables here.
-  const client = new BillPayClient({
-    interswitch: {
-      clientId: process.env.INTERSWITCH_CLIENT_ID || "dummy_client_id",
-      secretKey: process.env.INTERSWITCH_SECRET_KEY || "dummy_secret_key",
-      terminalId: process.env.INTERSWITCH_TERMINAL_ID || "dummy_terminal_id",
-      apiBaseUrl:
-        process.env.INTERSWITCH_API_BASE_URL ||
-        "https://sandbox.quickteller.com",
-      authUrl:
-        process.env.INTERSWITCH_AUTH_URL ||
-        "https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken",
-      paymentBaseUrl:
-        process.env.INTERSWITCH_PAYMENT_BASE_URL ||
-        "https://sandbox.quickteller.com",
-      merchantCode:
-        process.env.INTERSWITCH_MERCHANT_CODE || "dummy_merchant_code",
-      paymentReferencePrefix: "BPY_",
-    },
-    vtpass: {
-      apiKey: process.env.VTPASS_APIKEY || "dummy_api_key",
-      secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
-      apiBaseUrl:
-        process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
-      publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
-    },
-  });
+async function main(): Promise<void> {
 
   // You can set provider preferences (e.g., Primary: INTERSWITCH, Fallback: VTPASS)
   client.setProviderPreference("INTERSWITCH", "VTPASS");
@@ -117,11 +86,11 @@ async function main() {
       });
       console.log("interswitch transaction", interswitchTx);
       console.log("vtpass transaction", vtpassTx);
-    } catch (fetchErr: any) {
-      console.log(`Payment failed: ${fetchErr.message}`, fetchErr);
+    } catch (fetchErr: unknown) {
+      console.log(`Payment failed: ${(fetchErr as Error).message}`, fetchErr);
     }
-  } catch (err: any) {
-    console.error("\n[Example Error]", err.message);
+  } catch (err: unknown) {
+    console.error("\n[Example Error]", (err as Error).message);
   }
 }
 

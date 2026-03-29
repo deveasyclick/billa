@@ -1,6 +1,6 @@
 export type { BillerItem } from "./biller-item";
 export type { BillPayCategory } from "./category";
-export type { PayObject, ProviderResult } from "./payment";
+export type { PayObject, ProviderResult, Customer, PayResponse } from "./payment";
 export type {
   VTPassVariation,
   GetVTPassVariationsResponse,
@@ -21,7 +21,7 @@ export type {
   PayWithVtPassPayload,
   VTPassPayPayload,
 } from "./vtpass";
-export type { Customer } from "./interswitch";
+
 export type {
   Category,
   Biller,
@@ -31,7 +31,7 @@ export type {
   PaymentItem,
   PaymentItemsResponse,
   ValidateCustomersResponse,
-  PayResponse,
+
   TransactionResponse,
   ConfirmTransactionResponse,
 } from "./interswitch";

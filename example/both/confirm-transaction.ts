@@ -1,7 +1,5 @@
-import * as dotenv from "dotenv";
-import { BillPayClient, generateRequestId } from "../../src";
-
-dotenv.config();
+import { generateRequestId } from "../../src";
+import { billPayClient as client } from "../client";
 
 /**
  * This example demonstrates the full lifecycle of a bill payment:
@@ -10,37 +8,7 @@ dotenv.config();
  * 3. Executing the payment
  * 4. Confirming the transaction status using confirmTransaction
  */
-async function main() {
-  console.log("==========================================");
-  console.log("   BillPay SDK Confirm Transaction Example ");
-  console.log("==========================================");
-
-  const client = new BillPayClient({
-    interswitch: {
-      clientId: process.env.INTERSWITCH_CLIENT_ID || "dummy_client_id",
-      secretKey: process.env.INTERSWITCH_SECRET_KEY || "dummy_secret_key",
-      terminalId: process.env.INTERSWITCH_TERMINAL_ID || "dummy_terminal_id",
-      apiBaseUrl:
-        process.env.INTERSWITCH_API_BASE_URL ||
-        "https://sandbox.quickteller.com",
-      authUrl:
-        process.env.INTERSWITCH_AUTH_URL ||
-        "https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken",
-      paymentBaseUrl:
-        process.env.INTERSWITCH_PAYMENT_BASE_URL ||
-        "https://sandbox.quickteller.com",
-      merchantCode:
-        process.env.INTERSWITCH_MERCHANT_CODE || "dummy_merchant_code",
-      paymentReferencePrefix: "BPY_",
-    },
-    vtpass: {
-      apiKey: process.env.VTPASS_APIKEY || "dummy_api_key",
-      secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
-      apiBaseUrl:
-        process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
-      publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
-    },
-  });
+async function main(): Promise<void> {
 
   try {
     console.log("\n[1] Fetching plans...");
@@ -122,12 +90,13 @@ async function main() {
       "Confirmation Metadata:",
       JSON.stringify(isConfirm.metadata, null, 2),
     );
-  } catch (error: any) {
-    console.error("\n[Example Error]", error.message);
-    if (error.response?.data) {
+  } catch (error: unknown) {
+    const err = error as Error;
+    console.error("\n[Example Error]", err.message);
+    if ((err as any).response?.data) {
       console.error(
         "API Error Details:",
-        JSON.stringify(error.response.data, null, 2),
+        JSON.stringify((err as any).response.data, null, 2),
       );
     }
   }

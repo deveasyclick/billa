@@ -1,17 +1,7 @@
-import * as dotenv from "dotenv";
-import { VtpassClient, generateRequestId } from "../../src";
-
-dotenv.config();
+import { generateRequestId } from "../../src";
+import { vtpassClient as client } from "../client";
 
 async function main(): Promise<void> {
-  const client = new VtpassClient({
-    vtpass: {
-      apiKey: process.env.VTPASS_APIKEY || "dummy_api_key",
-      secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
-      apiBaseUrl: process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
-      publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
-    },
-  });
 
   try {
     const plans = await client.getPlans({ category: "ELECTRICITY-BILL" });

@@ -1,7 +1,5 @@
-import * as dotenv from "dotenv";
-import { VtpassClient, generateRequestId } from "../../src";
-
-dotenv.config();
+import { generateRequestId } from "../../src";
+import { vtpassClient as client } from "../client";
 
 /**
  * This example demonstrates the full lifecycle using VtpassClient:
@@ -11,18 +9,6 @@ dotenv.config();
  * 4. Confirming the transaction status using confirmTransaction
  */
 async function main(): Promise<void> {
-  console.log("==========================================");
-  console.log("   VTpass Client Confirmation Example     ");
-  console.log("==========================================");
-
-  const client = new VtpassClient({
-    vtpass: {
-      apiKey: process.env.VTPASS_APIKEY || "dummy_api_key",
-      secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
-      apiBaseUrl: process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
-      publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
-    },
-  });
 
   try {
     console.log("\n[1] Fetching plans...");
@@ -62,10 +48,10 @@ async function main(): Promise<void> {
     console.log("Metadata:", JSON.stringify(confirmation.metadata, null, 2));
 
   } catch (error: unknown) {
-    const err = error as any;
+    const err = error as Error;
     console.error("\n[Example Error]", err.message);
-    if (err.response?.data) {
-      console.error("API Error Details:", JSON.stringify(err.response.data, null, 2));
+    if ((err as any).response?.data) {
+      console.error("API Error Details:", JSON.stringify((err as any).response.data, null, 2));
     }
   }
 }
