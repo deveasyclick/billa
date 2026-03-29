@@ -7,7 +7,7 @@ import type {
   VTPassPayPayload,
   VTPassTransactionResponse,
 } from "../common/types/vtpass";
-import normalizeStatus from '../common/utils/normalizeStatus';
+import normalizeStatus from "../common/utils/normalizeStatus";
 import type { PayRequest } from "../core";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
 
@@ -121,12 +121,12 @@ export class VTPassProvider implements IBillPaymentProvider {
     return {
       paymentRef: reference,
       amount: Number(tx.amount),
-      status:normalizeStatus(tx.content.transactions.status),
+      status: normalizeStatus(tx.content.transactions.status),
       metadata: {
-        customerName: tx.CustomerName,
-        customerAddress: tx.CustomerAddress,
-        units: tx.Units,
-        token: tx.Token,
+        customerName: tx.CustomerName ?? tx.customerName,
+        customerAddress: tx.CustomerAddress ?? tx.customerAddress,
+        units: tx.Units ?? tx.units,
+        token: tx.Token ?? tx.token,
       },
     };
   }

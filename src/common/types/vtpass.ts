@@ -89,9 +89,13 @@ export interface VTPassTransactionResponse {
   amount: number;
   transaction_date: string; // ISO date string
   CustomerName?: string;
+  customerName?: string;
   CustomerAddress?: string;
+  customerAddress?: string;
   Units?: string;
+  units?: string;
   Token?: string;
+  token?: string;
 }
 
 export interface VTPassCustomer {
