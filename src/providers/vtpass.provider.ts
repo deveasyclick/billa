@@ -5,6 +5,7 @@ import type { Customer, PayResponse } from "../common/types/payment";
 import type {
   VTPassBillCategory,
   VTPassPayPayload,
+  VTPassTransactionResponse,
 } from "../common/types/vtpass";
 import type { PayRequest } from "../core";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
@@ -74,23 +75,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     const vtpassPayload: VTPassPayPayload = this.buildVtpassPayload(payload);
 
     const tx = await this.vtpassService.pay(vtpassPayload);
-    return {
-      paymentRef: payload.reference,
-      amount: Number(tx.amount),
-      status: (tx.content.transactions.status === "delivered" ||
-      tx.content.transactions.status === "success"
-        ? "success"
-        : tx.content.transactions.status.toLowerCase()) as
-        | "success"
-        | "pending"
-        | "failed",
-      metadata: {
-        customerName: tx.CustomerName,
-        customerAddress: tx.CustomerAddress,
-        units: tx.Units,
-        token: tx.Token,
-      },
-    };
+    return this.mapTransactionToPayResponse(payload.reference, tx);
   }
 
   async listPlans(options?: {
@@ -130,7 +115,13 @@ export class VTPassProvider implements IBillPaymentProvider {
   async confirm(reference: string): Promise<PayResponse> {
     const tx = await this.vtpassService.getTransaction(reference);
 
-    // TODO: add a util to return this shape
+    return this.mapTransactionToPayResponse(reference, tx);
+  }
+
+  private mapTransactionToPayResponse(
+    reference: string,
+    tx: VTPassTransactionResponse,
+  ): PayResponse {
     return {
       paymentRef: reference,
       amount: Number(tx.amount),
