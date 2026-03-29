@@ -81,8 +81,6 @@ export class VTPassProvider implements IBillPaymentProvider {
 
   async listPlans(options?: {
     filters?: Record<string, string[]>;
-    forceRefresh?: boolean;
-    ttlMs?: number;
   }): Promise<BillerItem[]> {
     return this.vtpassService.getPlans(options);
   }

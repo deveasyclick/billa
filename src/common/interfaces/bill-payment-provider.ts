@@ -16,10 +16,8 @@ export interface IBillPaymentProvider {
    * Retrieve biller items/plans exposed by the provider.  Filters and caching
    * behaviour are passed through to the underlying service.
    */
-  listPlans?(options?: {
+  listPlans(options?: {
     filters?: Record<string, string[]>;
-    forceRefresh?: boolean;
-    ttlMs?: number;
   }): Promise<BillerItem[]>;
 
   /**

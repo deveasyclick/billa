@@ -27,8 +27,6 @@ export class InterswitchProvider implements IBillPaymentProvider {
 
   async listPlans(options?: {
     filters?: Record<string, string[]>;
-    forceRefresh?: boolean;
-    ttlMs?: number;
   }): Promise<BillerItem[]> {
     return this.interswitchService.getPlans(options);
   }
