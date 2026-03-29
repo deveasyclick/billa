@@ -4,7 +4,7 @@ import { vtpassClient as client } from "../client";
 async function main(): Promise<void> {
 
   try {
-    const plans = await client.getPlans({ category: "ELECTRICITY-BILL" });
+    const plans = await client.getPlans({ filters: { vtpass: { "ELECTRICITY-BILL": [] } } });
     const plan = plans.find(p => p.paymentCode === "prepaid");
     if (!plan) throw new Error("No prepaid plan found");
 

@@ -95,43 +95,9 @@ export class VTPassService {
    */
   async getPlans(options?: {
     filters?: Record<string, string[]>;
-    forceRefresh?: boolean;
-    ttlMs?: number;
   }): Promise<BillerItem[]> {
-    const ttl = options?.ttlMs ?? 5 * 60 * 1000;
-    const key = JSON.stringify(options?.filters || {});
-    const now = Date.now();
-    const cached = this.planCache.get(key);
-    if (cached && now < cached.expiry && !options?.forceRefresh) {
-      return options?.filters
-        ? this.applyFilters(cached.plans, options.filters)
-        : cached.plans;
-    }
-
-    const plans = await this.fetchPlans(options?.filters);
-    this.planCache.set(key, { plans, expiry: now + ttl });
-    return plans;
+    return this.fetchPlans(options?.filters);
   }
-
-  /**
-   * Apply filter object to a list of plans (used for cached results).
-   */
-  private applyFilters(
-    plans: BillerItem[],
-    filters: Record<string, string[]>,
-  ): BillerItem[] {
-    return plans.filter((p) => {
-      const allowed = filters[p.category];
-      if (!allowed || allowed.length === 0) return true;
-      return allowed.includes(p.billerName) || allowed.includes(p.billerId);
-    });
-  }
-
-  // simple in-memory cache keyed by filter JSON
-  private readonly planCache: Map<
-    string,
-    { plans: BillerItem[]; expiry: number }
-  > = new Map();
 
   /**
    * Internal builder that constructs plans by querying VTpass endpoints.

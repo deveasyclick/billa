@@ -6,8 +6,6 @@ import {
 } from "../integration/vtpass/vtpass.service";
 import { VTPassProvider } from "../providers/vtpass.provider";
 import { type BillPayCategory } from "../common/types";
-import type { VTPassBillCategory } from "../common/types/vtpass";
-
 import { type IBillPayClient, type PayRequest, type ValidateCustomerRequest, type GetPlansOptions } from "./IBillPayClient";
 
 export interface VtpassClientConfig {
@@ -24,22 +22,10 @@ export class VtpassClient implements IBillPayClient {
   }
 
   async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
-    const category = options?.category;
     const filters = options?.filters?.vtpass;
 
-    if (category || filters) {
-      return this.service.getPlans({
-        filters: {
-          ...(category && { [category as VTPassBillCategory]: [] }),
-          ...filters,
-        },
-        forceRefresh: options?.forceRefresh,
-        ttlMs: options?.ttlMs,
-      });
-    }
     return this.service.getPlans({
-      forceRefresh: options?.forceRefresh,
-      ttlMs: options?.ttlMs,
+      filters,
     });
   }
 

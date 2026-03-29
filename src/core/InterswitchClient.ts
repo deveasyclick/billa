@@ -36,22 +36,10 @@ export class InterswitchClient implements IBillPayClient {
   //TODO: Remove category from options
   // TODO: remove caching
   async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
-    const category = options?.category;
     const filters = options?.filters?.interswitch;
 
-    if (category || filters) {
-      return this.service.getPlans({
-        filters: {
-          ...(category && { [category]: [] }),
-          ...filters,
-        },
-        forceRefresh: options?.forceRefresh,
-        ttlMs: options?.ttlMs,
-      });
-    }
     return this.service.getPlans({
-      forceRefresh: options?.forceRefresh,
-      ttlMs: options?.ttlMs,
+      filters,
     });
   }
 

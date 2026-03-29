@@ -157,41 +157,23 @@ export class BillPayClient implements IBillPayClient {
    * Get available billing plans.
    */
   async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
-    const { provider, filters, forceRefresh, ttlMs, category } = options || {};
+    const { provider, filters } = options || {};
 
     const targetProvider = provider ?? this.primaryProvider;
-
-    // logic to handle category filter if provided as a top-level option
-    const activeFilters = { ...filters };
-    if (category) {
-      if (targetProvider === "INTERSWITCH" || targetProvider === "BOTH") {
-        activeFilters.interswitch = {
-          ...activeFilters.interswitch,
-          [category]: [],
-        };
-      }
-      if (targetProvider === "VTPASS" || targetProvider === "BOTH") {
-        activeFilters.vtpass = { ...activeFilters.vtpass, [category]: [] };
-      }
-    }
 
     if (targetProvider === "BOTH") {
       const results: BillerItem[][] = [];
       if (this.interswitchService) {
         results.push(
           await this.interswitchService.getPlans({
-            filters: activeFilters.interswitch,
-            forceRefresh,
-            ttlMs,
+            filters: filters?.interswitch,
           }),
         );
       }
       if (this.vtpassService) {
         results.push(
           await this.vtpassService.getPlans({
-            filters: activeFilters.vtpass,
-            forceRefresh,
-            ttlMs,
+            filters: filters?.vtpass,
           }),
         );
       }
@@ -201,17 +183,13 @@ export class BillPayClient implements IBillPayClient {
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
       return this.interswitchService!.getPlans({
-        filters: activeFilters.interswitch,
-        forceRefresh,
-        ttlMs,
+        filters: filters?.interswitch,
       });
     }
 
     validateProvider("VTPASS", { vtpass: this.vtpassService });
     return this.vtpassService!.getPlans({
-      filters: activeFilters.vtpass,
-      forceRefresh,
-      ttlMs,
+      filters: filters?.vtpass,
     });
   }
 
@@ -222,7 +200,7 @@ export class BillPayClient implements IBillPayClient {
     providers: ProviderType[],
     request: PayRequest,
   ): Promise<PayResponse> {
-    let lastError: any;
+    let lastError: unknown;
 
     for (const providerName of providers) {
       try {
@@ -234,7 +212,9 @@ export class BillPayClient implements IBillPayClient {
       } catch (err: unknown) {
         lastError = err;
         const errorMessage =
-          (err as any).response?.data || (err as Error)?.message || err;
+          (err as { response?: { data?: unknown } })?.response?.data ||
+          (err as Error)?.message ||
+          err;
         console.warn(`Payment via ${providerName} failed:`, errorMessage);
         // Continue to next provider on failure
       }

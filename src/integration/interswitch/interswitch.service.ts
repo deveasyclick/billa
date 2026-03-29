@@ -157,64 +157,11 @@ export class InterSwitchService {
     return this.request("GET", `/services/options?serviceid=${serviceId}`);
   }
 
-  /**
-   * Cached wrapper around {@link fetchPlans}.  By default the result is stored
-   * in an in‑memory cache for `ttlMs` milliseconds (default 5 minutes).  Pass
-   * `forceRefresh: true` to bypass the cache.  Filters are applied after the
-   * plans have been retrieved and cached; cache keys include the stringified
-   * filter object.
-   */
-  /**
-   * Backward‑compatible method retained from earlier releases.  It simply
-   * proxies to {@link getPlans} without filters and is **deprecated**; prefer
-   * `getPlans()` instead.
-   */
-  async findPlans(): Promise<BillerItem[]> {
-    return this.getPlans();
-  }
-
   async getPlans(options?: {
     filters?: Record<string, string[]>;
-    forceRefresh?: boolean;
-    ttlMs?: number;
   }): Promise<BillerItem[]> {
-    const ttl = options?.ttlMs ?? 5 * 60 * 1000;
-    const key = JSON.stringify(options?.filters || {});
-
-    // clean up expired entries lazily
-    const now = Date.now();
-    const cached = this.planCache.get(key);
-    if (cached && now < cached.expiry && !options?.forceRefresh) {
-      return options?.filters
-        ? this.applyFilters(cached.plans, options.filters)
-        : cached.plans;
-    }
-
-    const plans = await this.fetchPlans(options?.filters);
-    this.planCache.set(key, { plans, expiry: now + ttl });
-    return plans;
+    return this.fetchPlans(options?.filters);
   }
-
-  /**
-   * Apply a filter object to an existing list of plans (used internally when
-   * retrieving from cache).
-   */
-  private applyFilters(
-    plans: BillerItem[],
-    filters: Record<string, string[]>,
-  ): BillerItem[] {
-    return plans.filter((p) => {
-      const allowed = filters[p.category as string];
-      if (!allowed || allowed.length === 0) return true;
-      return allowed.includes(p.billerName) || allowed.includes(p.billerId);
-    });
-  }
-
-  // simple in-memory cache keyed by filter JSON
-  private readonly planCache: Map<
-    string,
-    { plans: BillerItem[]; expiry: number }
-  > = new Map();
 
   /**
    * Validate customer

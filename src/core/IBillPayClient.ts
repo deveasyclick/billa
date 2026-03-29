@@ -31,14 +31,11 @@ export interface ValidateCustomerRequest {
  * Options for fetching available plans
  */
 export interface GetPlansOptions {
-  category?: string;
   provider?: ProviderType | "BOTH";
   filters?: {
     interswitch?: Record<string, string[]>;
     vtpass?: Record<string, string[]>;
   };
-  forceRefresh?: boolean;
-  ttlMs?: number;
 }
 
 /**
