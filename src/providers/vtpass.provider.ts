@@ -7,6 +7,7 @@ import type {
   VTPassPayPayload,
   VTPassTransactionResponse,
 } from "../common/types/vtpass";
+import normalizeStatus from '../common/utils/normalizeStatus';
 import type { PayRequest } from "../core";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
 
@@ -125,13 +126,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     return {
       paymentRef: reference,
       amount: Number(tx.amount),
-      status: (tx.content.transactions.status === "delivered" ||
-      tx.content.transactions.status === "success"
-        ? "success"
-        : tx.content.transactions.status.toLowerCase()) as
-        | "success"
-        | "pending"
-        | "failed",
+      status:normalizeStatus(tx.content.transactions.status),
       metadata: {
         customerName: tx.CustomerName,
         customerAddress: tx.CustomerAddress,

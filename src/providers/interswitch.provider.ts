@@ -2,6 +2,7 @@ import { Providers, type BillPayCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
 import type { Customer, PayResponse } from "../common/types/payment";
+import normalizeStatus from "../common/utils/normalizeStatus";
 import type { PayRequest } from "../core";
 import { InterSwitchService } from "../integration/interswitch/interswitch.service";
 
@@ -20,12 +21,7 @@ export class InterswitchProvider implements IBillPaymentProvider {
       paymentRef: payload.reference,
       amount: resp.ApprovedAmount,
       metadata: resp.AdditionalInfo,
-      status: (resp.ResponseCodeGrouping === "SUCCESSFUL"
-        ? "success"
-        : resp.ResponseCodeGrouping.toLowerCase()) as
-        | "success"
-        | "pending"
-        | "failed",
+      status: normalizeStatus(resp.ResponseCodeGrouping),
     };
   }
 
@@ -76,12 +72,7 @@ export class InterswitchProvider implements IBillPaymentProvider {
       paymentRef: reference,
       amount: resp.ApprovedAmount,
       metadata: resp.AdditionalInfo,
-      status: (resp.ResponseCodeGrouping === "SUCCESSFUL"
-        ? "success"
-        : resp.ResponseCodeGrouping.toLowerCase()) as
-        | "success"
-        | "pending"
-        | "failed",
+      status: normalizeStatus(resp.ResponseCodeGrouping),
     };
   }
 }
