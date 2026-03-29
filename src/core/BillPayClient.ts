@@ -165,14 +165,14 @@ export class BillPayClient implements IBillPayClient {
       const results: BillerItem[][] = [];
       if (this.interswitchService) {
         results.push(
-          await this.interswitchService.getPlans({
+          await this.factory.getProvider(Providers.INTERSWITCH).listPlans({
             filters: filters?.interswitch,
           }),
         );
       }
       if (this.vtpassService) {
         results.push(
-          await this.vtpassService.getPlans({
+          await this.factory.getProvider(Providers.VTPASS).listPlans({
             filters: filters?.vtpass,
           }),
         );
@@ -182,13 +182,13 @@ export class BillPayClient implements IBillPayClient {
 
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      return this.interswitchService!.getPlans({
+      return this.factory.getProvider(Providers.INTERSWITCH).listPlans({
         filters: filters?.interswitch,
       });
     }
 
     validateProvider("VTPASS", { vtpass: this.vtpassService });
-    return this.vtpassService!.getPlans({
+    return this.factory.getProvider(Providers.VTPASS).listPlans({
       filters: filters?.vtpass,
     });
   }
@@ -240,22 +240,16 @@ export class BillPayClient implements IBillPayClient {
     if (targetProvider === "BOTH") {
       const results: BillPayCategory[][] = [];
       if (this.interswitchService) {
-        const res = await this.interswitchService.getBillerCategories();
         results.push(
-          (res.BillerCategories || []).map((cat) => ({
-            name: cat.Name,
-            provider: Providers.INTERSWITCH,
-          })),
+          await this.factory
+            .getProvider(Providers.INTERSWITCH)
+            .listCategories(),
         );
       }
 
       if (this.vtpassService) {
-        const res = await this.vtpassService.getCategories();
         results.push(
-          (res.content || []).map((cat) => ({
-            name: cat.identifier.toUpperCase(),
-            provider: Providers.VTPASS,
-          })),
+          await this.factory.getProvider(Providers.VTPASS).listCategories(),
         );
       }
 
@@ -271,20 +265,12 @@ export class BillPayClient implements IBillPayClient {
 
     if (targetProvider === "INTERSWITCH") {
       validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      const res = await this.interswitchService!.getBillerCategories();
-      return (res.BillerCategories || []).map((cat) => ({
-        name: cat.Name,
-        provider: Providers.INTERSWITCH,
-      }));
+      return this.factory.getProvider(Providers.INTERSWITCH).listCategories();
     }
 
     // VTPASS path
     validateProvider("VTPASS", { vtpass: this.vtpassService });
-    const res = await this.vtpassService!.getCategories();
-    return (res.content || []).map((cat) => ({
-      name: cat.identifier.toUpperCase(),
-      provider: Providers.VTPASS,
-    }));
+    return this.factory.getProvider(Providers.VTPASS).listCategories();
   }
 
   /**

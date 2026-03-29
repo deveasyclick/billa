@@ -24,7 +24,7 @@ export class VtpassClient implements IBillPayClient<SingleProviderGetPlansOption
   async getPlans(options?: SingleProviderGetPlansOptions): Promise<BillerItem[]> {
     const filters = options?.filters;
 
-    return this.service.getPlans({
+    return this.provider.listPlans({
       filters,
     });
   }

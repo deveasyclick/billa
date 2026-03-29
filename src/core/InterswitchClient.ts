@@ -36,7 +36,7 @@ export class InterswitchClient implements IBillPayClient<SingleProviderGetPlansO
   async getPlans(options?: SingleProviderGetPlansOptions): Promise<BillerItem[]> {
     const filters = options?.filters;
 
-    return this.service.getPlans({
+    return this.provider.listPlans({
       filters,
     });
   }
