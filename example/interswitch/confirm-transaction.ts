@@ -14,9 +14,7 @@ async function main(): Promise<void> {
     console.log("\n[1] Fetching plans...");
     const plans = await client.getPlans({
       filters: {
-        interswitch: {
-          "Cable TV Bills": ["DAARSAT Communications"],
-        },
+        "Cable TV Bills": ["DAARSAT Communications"],
       },
     });
 

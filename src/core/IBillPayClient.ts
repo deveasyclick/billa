@@ -38,14 +38,18 @@ export interface GetPlansOptions {
   };
 }
 
+export interface SingleProviderGetPlansOptions {
+  filters?: Record<string, string[]>;
+}
+
 /**
  * Unified interface for all single-provider BillPay clients.
  */
-export interface IBillPayClient {
+export interface IBillPayClient<TGetPlansOptions = GetPlansOptions> {
   /**
    * Fetch available plans from the provider.
    */
-  getPlans(options?: GetPlansOptions): Promise<BillerItem[]>;
+  getPlans(options?: TGetPlansOptions): Promise<BillerItem[]>;
 
   /**
    * Get available biller categories from the provider.

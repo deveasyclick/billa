@@ -7,7 +7,7 @@ import {
   type IBillPayClient,
   type PayRequest,
   type ValidateCustomerRequest,
-  type GetPlansOptions,
+  type SingleProviderGetPlansOptions,
 } from "./IBillPayClient";
 import type { Customer, PayResponse } from "../common/types/payment";
 
@@ -21,7 +21,7 @@ export interface InterswitchClientConfig {
   interswitch: InterSwitchConfig;
 }
 
-export class InterswitchClient implements IBillPayClient {
+export class InterswitchClient implements IBillPayClient<SingleProviderGetPlansOptions> {
   private readonly service: InterSwitchService;
   private readonly provider: InterswitchProvider;
 
@@ -33,10 +33,8 @@ export class InterswitchClient implements IBillPayClient {
   /**
    * Fetch available plans from InterSwitch.
    */
-  //TODO: Remove category from options
-  // TODO: remove caching
-  async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
-    const filters = options?.filters?.interswitch;
+  async getPlans(options?: SingleProviderGetPlansOptions): Promise<BillerItem[]> {
+    const filters = options?.filters;
 
     return this.service.getPlans({
       filters,

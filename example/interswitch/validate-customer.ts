@@ -4,7 +4,7 @@ async function main(): Promise<void> {
 
   try {
     const plans = await client.getPlans({
-      filters: { interswitch: { "Cable TV Bills": ["DAARSAT Communications"] } },
+      filters: { "Cable TV Bills": ["DAARSAT Communications"] },
     });
     const plan = plans[0];
     if (!plan) throw new Error("No plans found");

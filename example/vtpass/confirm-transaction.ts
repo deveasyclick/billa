@@ -13,7 +13,7 @@ async function main(): Promise<void> {
   try {
     console.log("\n[1] Fetching plans...");
     const plans = await client.getPlans({
-      filters: { vtpass: { "ELECTRICITY-BILL": [] } },
+      filters: { "ELECTRICITY-BILL": [] },
     });
 
     const plan = plans.find(p => p.paymentCode === "prepaid");
