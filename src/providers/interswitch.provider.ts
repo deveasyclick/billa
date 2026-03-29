@@ -40,7 +40,6 @@ export class InterswitchProvider implements IBillPaymentProvider {
   async listCategories(): Promise<BillPayCategory[]> {
     const res = await this.interswitchService.getBillerCategories();
     return (res.BillerCategories || []).map((cat) => ({
-      id: String(cat.Id),
       name: cat.Name,
       provider: Providers.INTERSWITCH,
     }));

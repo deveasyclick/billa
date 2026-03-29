@@ -104,8 +104,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   async listCategories(): Promise<BillPayCategory[]> {
     const res = await this.vtpassService.getCategories();
     return (res.content || []).map((cat) => ({
-      id: cat.identifier,
-      name: cat.name,
+      name: cat.identifier,
       provider: Providers.VTPASS,
     }));
   }
