@@ -1,17 +1,20 @@
 # @deveasyclick/billpay
 
-A framework-agnostic Node.js SDK for bill payment processing with automatic provider failover. Supports InterSwitch and VTPass providers for airtime, data, TV, electricity, and gaming bill payments.
+A framework-agnostic Node.js SDK for bill payment processing with automatic provider failover in Nigeria. Supports InterSwitch and VTPass providers for airtime, data, TV, electricity, and gaming bill payments.
 
 ## Features
 
-- 🔄 **Automatic Failover**: Automatically switches to fallback provider on primary failure
-- 🏭 **Multiple Providers**: Support for InterSwitch and VTPass payment providers
-- 🎯 **Single‑provider clients**: You can now instantiate `InterswitchClient` or `VtpassClient`, or supply only one provider to `BillPayClient`
-- 📱 **Comprehensive Coverage**: Airtime, Data, TV subscriptions, Electricity, and Gaming
-- 🚀 **Framework-Agnostic**: Works with Express, Fastify, NestJS, or any Node.js framework
-- 💾 **Stateless**: No database dependencies, SDK is entirely stateless
-- 🔧 **Flexible Configuration**: Inject custom HTTP client and caching implementation
-- 📦 **TypeScript-First**: Full type safety with TypeScript support
+- 🔄 **Automatic Failover**: Automatically switches to fallback provider on primary failure.
+- 🏭 **Multiple Providers**: Built-in support for InterSwitch and VTPass payment providers.
+- 🎯 **Single-Provider Clients**: Instantiate `InterswitchClient` or `VtpassClient` when you only need one provider, or supply only one provider to `BillPayClient`.
+- 🏷️ **Unified Categories**: Access normalized bill categories across providers using `getCategories()`.
+- 🔍 **Provider-Agnostic Abstractions**: Fetch billing plans, validate customers, and process payments uniformly, regardless of the underlying provider.
+- ✅ **Transaction Confirmation**: Verify and requery transaction status uniformly using `confirmTransaction()`.
+- 📱 **Comprehensive Coverage**: Airtime, Data, TV subscriptions, Electricity, and Gaming.
+- 🚀 **Framework-Agnostic**: Works seamlessly with Express, Fastify, NestJS, or any Node.js framework.
+- 💻 **Stateless**: No database dependencies. The SDK is entirely stateless.
+- 🔧 **Flexible Configuration**: Plug in your custom HTTP client if needed.
+- 📦 **TypeScript-First**: Full type safety with extensive TypeScript support for requests and responses.
 
 ## Installation
 
@@ -25,10 +28,12 @@ pnpm add @deveasyclick/billpay
 
 ## Quick Start
 
+### 1. Initialization
+
 ```typescript
 import { BillPayClient, InterswitchClient, VtpassClient } from '@deveasyclick/billpay';
 
-// full configuration with both providers
+// Full configuration with both providers
 const client = new BillPayClient({
   interswitch: {
     clientId: 'your-client-id',
@@ -43,91 +48,75 @@ const client = new BillPayClient({
     secretKey: 'your-secret-key',
     apiBaseUrl: 'https://sandbox.vtpass.com/api',
     publicKey: 'your-public-key',
+    phone: "0801111111"
   },
 });
-
-// or init with only one provider (InterSwitch example)
-const interswitchOnly = new InterswitchClient({
-  interswitch: {
-    clientId: 'your-client-id',
-    secretKey: 'your-secret-key',
-    terminalId: 'your-terminal-id',
-    apiBaseUrl: 'https://sandbox.quickteller.com',
-    authUrl: 'https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken',
-    paymentReferencePrefix: 'BPY_',
-  },
-});
-
-// vtpass-only client is similar:
-// const vtpassOnly = new VtpassClient({ vtpass: { ... } });
-
 
 // Set provider preference (primary and fallback)
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
+```
 
-// Get available plans (object arguments, includes cache options)
-const plans = await client.getPlans({ category: 'AIRTIME', provider: 'BOTH' });
-console.log(plans);
+If you only use one provider, you can initialize a single-provider client cleanly:
+
+```typescript
+// InterSwitch only
+const interswitchClient = new InterswitchClient({
+  interswitch: { /* config */ }
+});
+
+// VTPass only
+const vtpassClient = new VtpassClient({
+  vtpass: { /* config */ }
+});
+```
+
+### 2. Usage Examples
+
+```typescript
+// 1. Get Categories
+const categories = await client.getCategories('BOTH');
+console.log('Categories:', categories);
+
+// 2. Get available plans (supports provider-specific filters)
+const plans = await client.getPlans({ 
+  provider: 'BOTH',
+  filters: {
+    interswitch: { categoryId: ['3'] }, // Example filter
+    vtpass: { serviceID: ['mtn'] }
+  }
+});
 
 // Find a specific plan
 const mtnPlan = plans.find(p => p.billerName === 'MTN' && p.amount === 50000);
 
-// Execute payment
-const paymentResult = await client.pay({
-  billingItemId: mtnPlan.id,
-  paymentReference: 'unique-ref-12345',
-  billerItem: mtnPlan,
-  customerId: '08012345678',
-  amount: 50000,
-});
-
-console.log('Payment result:', paymentResult);
-
-// Validate customer
+// 3. Validate customer (e.g., meter number or smartcard)
 const customer = await client.validateCustomer({
   customerId: '08012345678',
   paymentCode: mtnPlan.paymentCode,
   provider: 'INTERSWITCH',
 });
+console.log('Customer Details:', customer);
 
-console.log('Customer:', customer);
+// 4. Execute payment
+const paymentResult = await client.pay({
+  billingItemId: mtnPlan.id, // Internal item ID
+  paymentReference: 'unique-ref-12345',
+  billerItem: mtnPlan,
+  customerId: '08012345678',
+  amount: 50000,
+});
+console.log('Payment result:', paymentResult);
+
+// 5. Confirm/Requery Transaction
+const confirmation = await client.confirmTransaction('unique-ref-12345');
+console.log('Transaction Status:', confirmation);
 ```
 
 ## API Reference
 
-### BillPayClient
+### `BillPayClient`
 
-Main client class for bill payment operations.  Accepts both `interswitch` and/or
-`vtpass` configuration; at least one must be supplied.  When only a single
-provider is configured the client behaves like the corresponding
-`InterswitchClient`/`VtpassClient` and provider overrides are disallowed.
-
-### InterswitchClient
-
-Convenience wrapper that is pre‑configured to use InterSwitch only.  This class
-exposes the same `getPlans`, `pay` and `validateCustomer` methods as
-`BillPayClient` but does not accept a provider override.  Instantiate with:
-
-```ts
-import { InterswitchClient } from '@deveasyclick/billpay';
-
-const client = new InterswitchClient({
-  interswitch: { /* config */ },
-});
-```
-
-### VtpassClient
-
-Same as `InterswitchClient` but for the VTPass provider.  Use when your
-application only interacts with VTPass:
-
-```ts
-import { VtpassClient } from '@deveasyclick/billpay';
-
-const client = new VtpassClient({
-  vtpass: { /* config */ },
-});
-```
+The primary class for bill payment operations. Accepts `interswitch` and/or `vtpass` configuration. If only one is supplied, it behaves like a single-provider client and disables failover.
 
 #### Constructor
 
@@ -135,94 +124,32 @@ const client = new VtpassClient({
 new BillPayClient(config: BillPayClientConfig)
 ```
 
-**Config Parameters:**
-- `interswitch`: InterSwitch credentials and endpoints
-- `vtpass`: VTPass credentials and endpoints
-
 #### Methods
 
-##### `setProviderPreference(primary: ProviderType, fallback?: ProviderType | null)`
+- `setProviderPreference(primary: ProviderType, fallback?: ProviderType | null)`
+  Sets the primary and optional fallback provider for default payment execution.
 
-Set the primary and optional fallback provider for payment execution.
+- `getActiveProviders()`
+  Returns the current primary and fallback providers.
 
-```typescript
-client.setProviderPreference('VTPASS', 'INTERSWITCH');
-```
+- `getCategories(provider?: ProviderType | 'BOTH'): Promise<BillPayCategory[]>`
+  Fetches unified biller categories (e.g., Airtime, Data, Power). Removes duplicates when fetching from both providers.
 
-##### `getActiveProviders()`
+- `getPlans(options?: GetPlansOptions): Promise<BillerItem[]>`
+  Fetches available billing plans across providers. You can restrict to a single provider or specify exact filters for Interswitch or VTPass.
 
-Get current provider preferences.
+- `validateCustomer(request: ValidateCustomerRequest): Promise<Customer>`
+  Validates a target customer identifier (like a decoder smartcard or prepaid meter number) prior to payment.
 
-```typescript
-const { primary, fallback } = client.getActiveProviders();
-```
+- `pay(request: PayRequest): Promise<PayResponse>`
+  Executes a payment. Automatic failover logic triggers if the primary provider fails, substituting the fallback provider (if available and not overridden). Overriding the provider for a specific payment disables failover.
 
-##### `getPlans(opts?: { category?: BillCategory; provider?: ProviderType | 'BOTH'; filters?: Record<string,string[]>; forceRefresh?: boolean; ttlMs?: number; }): Promise<BillerItem[]>`
+- `confirmTransaction(reference: string, provider?: ProviderType): Promise<PayResponse>`
+  Verifies the status of a previously executed transaction.
 
-Fetch available billing plans.  When using `BillPayClient` with only one provider, the
-`provider` argument is ignored since there is only a single source.  Both
-`InterswitchClient` and `VtpassClient` expose the same method but without the
-`provider` argument.
+### `InterswitchClient` & `VtpassClient`
 
-**Parameters:**
-- `category`: Optional category filter ('AIRTIME', 'DATA', 'TV', 'ELECTRICITY', 'GAMING')
-- `provider`: 'INTERSWITCH', 'VTPASS', or 'BOTH' (default: primary provider)
-
-```typescript
-// Get all airtime plans from both providers
-const plans = await client.getPlans({ category: 'AIRTIME', provider: 'BOTH' });
-
-// Get all TV plans from primary provider
-const tvPlans = await client.getPlans({ category: 'TV' });
-
-// Get all available plans from VTPass
-const vtpassPlans = await client.getPlans({ provider: 'VTPASS' });
-
-// Advanced: apply explicit filters and bypass cache
-const someFiltered = await client.getPlans({
-  filters: { 'Airtime and Data': ['MTN'] },
-  forceRefresh: true,
-});
-```
-
-##### `pay(request: PayRequest): Promise<PayResponse>`
-
-Execute a bill payment with automatic failover.  When you create a single‑provider
-client, failover logic is obviously disabled and the underlying provider is used
-directly.  You can still override the provider for a specific transaction when
-using `BillPayClient` by specifying the `provider` field; doing so on a
-single‑provider client will throw an error.
-
-**Request Parameters:**
-- `billingItemId`: ID of the billing item
-- `paymentReference`: Unique payment reference
-- `billerItem`: The BillerItem object from `getPlans()`
-- `customerId`: Customer identifier (phone number, meter number, etc.)
-- `amount`: Amount in kobo (smallest currency unit)
-- `plan`: Optional plan detail (for electricity: 'prepaid' or 'postpaid')
-- `provider`: Optional provider override (if not set, uses primary provider)
-
-**Response:**
-```typescript
-{
-  paymentRef: string;        // Payment reference
-  amount: number;            // Amount paid in kobo
-  status: 'SUCCESS' | 'PENDING' | 'FAILED';
-  metadata: Record<string, any>;
-}
-```
-
-##### `validateCustomer(request: ValidateCustomerRequest): Promise<Customer>`
-
-Validate a customer before payment.  The `provider` option behaves exactly as it
-does for `pay()` (ignored when only one provider is configured, validated
-otherwise).
-
-**Parameters:**
-- `customerId`: Customer identifier
-- `paymentCode`: Payment code/service ID
-- `type`: Optional (for electricity: 'prepaid' or 'postpaid')
-- `provider`: Optional provider (default: primary)
+Convenience wrappers around `BillPayClient` tailored for a single backend. Using them provides the same interface (`getPlans()`, `pay()`, `validateCustomer()`, `confirmTransaction()`, `getCategories()`) but ignores any attempt to override the provider parameter.
 
 ## Supported Bill Categories
 
@@ -232,25 +159,23 @@ otherwise).
 | DATA | Both | MTN Data, Airtel Data, Spectranet, Smile |
 | TV | Both | DSTV, GOTV, Startimes, Showmax |
 | ELECTRICITY | Both | Ikeja, Eko, Abuja, Kano, Port Harcourt, Jos, Kaduna, Enugu, Ibadan, Benin, Aba, Yola |
-| GAMING | InterSwitch | (Various gaming services) |
+| GAMING | InterSwitch | Various sports betting and gaming services |
 
 ## Fallback Behavior
 
-When you call `pay()` using `BillPayClient` with two providers, the SDK
-automatically tries the primary provider first. If it fails, it attempts the
-fallback provider (if configured):
+When calling `pay()` using `BillPayClient` with both providers initialized, the SDK attempts the designated primary provider first. If an error or failure occurs, it automatically falls back to the configured fallback provider.
 
 ```typescript
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
 
-// This will try INTERSWITCH first, then VTPASS if it fails
+// Attempts INTERSWITCH first. If it fails due to timeout/error, tries VTPASS.
 const result = await client.pay(paymentRequest);
 ```
 
-You can also override the provider for a single payment:
+You can explicitly override the provider for a single operation, which bypasses the fallback mechanism:
 
 ```typescript
-// This specific payment uses VTPASS, ignoring the preference
+// Enforces VTPass strictly for this call
 const result = await client.pay({
   ...paymentRequest,
   provider: 'VTPASS',
@@ -259,65 +184,22 @@ const result = await client.pay({
 
 ## Error Handling
 
-The SDK throws errors when:
-- All providers fail (with the last error message)
-- Configuration is invalid (e.g. you construct `BillPayClient` without any provider)
-- You attempt to use a provider that wasn’t configured (e.g. `client.pay({..., provider: 'VTPASS' })` on an InterSwitch-only client)
-- Invalid provider name is used
-- Network/API errors occur
+The SDK ensures robust error bubbling:
+- Explanatory failures if all providers fail (returns the final error trace).
+- Disallows invalid configurations (e.g., instantiating without providers).
+- Rejects provider overrides to unconfigured backends.
 
 ```typescript
 try {
   const result = await client.pay(paymentRequest);
 } catch (error) {
-  console.error('Payment failed:', error.message);
-  // Handle error appropriately
+  console.error('Payment failed across available providers:', error.message);
 }
 ```
 
-## Configuration Examples
+## Environment Variables Configuration
 
-### Using with Custom HTTP Client
-
-```typescript
-import axios from 'axios';
-
-const customHttpClient = axios.create({
-  timeout: 10000,
-  headers: {
-    'User-Agent': 'MyApp/1.0',
-  },
-});
-
-// Note: The SDK will use axios by default if not provided
-```
-
-### Production Configuration
-
-```typescript
-const client = new BillPayClient({
-  interswitch: {
-    clientId: process.env.INTERSWITCH_CLIENT_ID!,
-    secretKey: process.env.INTERSWITCH_SECRET_KEY!,
-    terminalId: process.env.INTERSWITCH_TERMINAL_ID!,
-    apiBaseUrl: 'https://api.quickteller.com', // Production URL
-    authUrl: 'https://api.quickteller.com/api/v5/Auth/GetAccessToken',
-    paymentBaseUrl: 'https://api.quickteller.com',
-    merchantCode: process.env.INTERSWITCH_MERCHANT_CODE!,
-    paymentReferencePrefix: 'PROD_',
-  },
-  vtpass: {
-    apiKey: process.env.VTPASS_API_KEY!,
-    secretKey: process.env.VTPASS_SECRET_KEY!,
-    apiBaseUrl: 'https://api.vtpass.com/api', // Production URL
-    publicKey: process.env.VTPASS_PUBLIC_KEY!,
-  },
-});
-```
-
-## Environment Variables
-
-Recommended environment variables for your application:
+Recommended environment variables for a secure and standard integration:
 
 ```env
 # InterSwitch
@@ -334,20 +216,10 @@ VTPASS_PUBLIC_KEY=your_public_key
 
 ## Stateless Architecture
 
-The SDK is entirely stateless - it doesn't maintain any database connections or persistent state. This means:
-
-- No database dependencies
-- Easy to integrate into any framework
-- Scalable across multiple server instances
-- Payment state tracking is the responsibility of your application
-
-## TypeScript Support
-
-Full TypeScript support with type definitions included:
-
-```typescript
-import type { BillerItem, PayRequest, PayResponse } from '@deveasyclick/billpay';
-```
+The SDK strictly operates statelessly. It offloads lifecycle handling and database schemas to your backend:
+- Instantly scalable across multiple cloud nodes.
+- Unburdens the host application from maintaining cached API states unnecessarily.
+- Payment intents tracking (pending, failed, successful) remains fully in your control.
 
 ## License
 
