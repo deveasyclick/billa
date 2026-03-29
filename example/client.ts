@@ -19,6 +19,7 @@ const vtpassConfig = {
   secretKey: process.env.VTPASS_SECRET_KEY || "dummy_secret_key",
   apiBaseUrl: process.env.VTPASS_API_BASE_URL || "https://sandbox.vtpass.com/api",
   publicKey: process.env.VTPASS_PUBLIC_KEY || "dummy_public_key",
+  phone: process.env.VTPASS_PHONE || "+2348111111111",
 };
 
 export const interswitchClient = new InterswitchClient({

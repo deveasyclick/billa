@@ -11,9 +11,6 @@ import normalizeStatus from '../common/utils/normalizeStatus';
 import type { PayRequest } from "../core";
 import { VTPassService } from "../integration/vtpass/vtpass.service";
 
-// TODO: set this in config
-const DEFAULT_PHONE_NUMBER = "+2348111111111";
-
 export class VTPassProvider implements IBillPaymentProvider {
   constructor(private readonly vtpassService: VTPassService) {}
 
@@ -42,7 +39,7 @@ export class VTPassProvider implements IBillPaymentProvider {
           serviceID: biller,
           phone: customerId,
           variation_code: paymentCode,
-          billersCode: DEFAULT_PHONE_NUMBER,
+          billersCode: this.vtpassService.config.phone,
           amount: amount,
         };
 
@@ -50,7 +47,7 @@ export class VTPassProvider implements IBillPaymentProvider {
         return {
           request_id: reference,
           serviceID: biller,
-          phone: DEFAULT_PHONE_NUMBER,
+          phone: this.vtpassService.config.phone,
           variation_code: paymentCode,
           billersCode: customerId,
           subscription_type: type ?? "change",
@@ -61,7 +58,7 @@ export class VTPassProvider implements IBillPaymentProvider {
         return {
           request_id: reference,
           serviceID: biller,
-          phone: DEFAULT_PHONE_NUMBER,
+          phone: this.vtpassService.config.phone,
           variation_code: paymentCode,
           billersCode: customerId,
           amount: amount,

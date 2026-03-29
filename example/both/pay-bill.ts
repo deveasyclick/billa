@@ -2,7 +2,6 @@ import { generateRequestId } from "../../src";
 import { billPayClient as client } from "../client";
 
 async function main(): Promise<void> {
-
   // You can set provider preferences (e.g., Primary: INTERSWITCH, Fallback: VTPASS)
   client.setProviderPreference("INTERSWITCH", "VTPASS");
   console.log(
@@ -82,7 +81,6 @@ async function main(): Promise<void> {
         provider: vtpassPlan.provider,
         category: vtpassPlan.category,
         paymentCode: vtpassPlan.paymentCode,
-        type: vtpassPlan.paymentCode,
       });
       console.log("interswitch transaction", interswitchTx);
       console.log("vtpass transaction", vtpassTx);

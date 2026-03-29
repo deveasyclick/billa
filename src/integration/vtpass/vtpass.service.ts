@@ -17,13 +17,14 @@ export interface VTPassConfig {
   secretKey: string;
   apiBaseUrl: string;
   publicKey?: string;
+  phone: string;
 }
 
 export class VTPassService {
   private readonly httpClient: AxiosInstance;
 
   constructor(
-    private readonly config: VTPassConfig,
+    public readonly config: VTPassConfig,
     httpClient?: AxiosInstance,
   ) {
     this.httpClient = httpClient || axios.create();
