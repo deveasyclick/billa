@@ -31,7 +31,6 @@ export interface BillPayClientConfig {
   vtpass?: VTPassConfig;
 }
 
-// TODO: Should this use providers instead of services?
 export class BillPayClient implements IBillPayClient {
   private readonly interswitchService?: InterSwitchService;
   private readonly vtpassService?: VTPassService;
