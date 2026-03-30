@@ -92,7 +92,5 @@ export interface InterSwitchConfig {
   terminalId: string;
   apiBaseUrl: string;
   authUrl: string;
-  paymentBaseUrl: string;
-  merchantCode: string;
   paymentReferencePrefix: string;
 }

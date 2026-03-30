@@ -14,10 +14,6 @@ const interswitchConfig = {
   authUrl:
     process.env.INTERSWITCH_AUTH_URL ||
     "https://sandbox.quickteller.com/api/v5/Auth/GetAccessToken",
-  paymentBaseUrl:
-    process.env.INTERSWITCH_PAYMENT_BASE_URL ||
-    "https://sandbox.quickteller.com",
-  merchantCode: process.env.INTERSWITCH_MERCHANT_CODE || "dummy_merchant_code",
   paymentReferencePrefix: "BPY_",
 };
 
