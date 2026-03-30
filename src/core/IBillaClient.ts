@@ -1,4 +1,4 @@
-import type { BillerItem, BillPayCategory } from "../common/types";
+import type { BillerItem, BillaCategory } from "../common/types";
 import type { Customer, PayResponse } from "../common/types/payment";
 import type { VTPassBillCategory } from "../common/types/vtpass";
 import { type ProviderType } from "../providers/bill-payment-provider.factory";
@@ -43,9 +43,9 @@ export interface SingleProviderGetPlansOptions {
 }
 
 /**
- * Unified interface for all single-provider BillPay clients.
+ * Unified interface for all single-provider Billa clients.
  */
-export interface IBillPayClient<TGetPlansOptions = GetPlansOptions> {
+export interface IBillaClient<TGetPlansOptions = GetPlansOptions> {
   /**
    * Fetch available plans from the provider.
    */
@@ -54,7 +54,7 @@ export interface IBillPayClient<TGetPlansOptions = GetPlansOptions> {
   /**
    * Get available biller categories from the provider.
    */
-  getCategories(): Promise<BillPayCategory[]>;
+  getCategories(): Promise<BillaCategory[]>;
 
   /**
    * Execute a payment.
@@ -69,5 +69,8 @@ export interface IBillPayClient<TGetPlansOptions = GetPlansOptions> {
   /**
    * Confirm/Requery a transaction.
    */
-  confirmTransaction(reference: string, provider?: ProviderType): Promise<PayResponse>;
+  confirmTransaction(
+    reference: string,
+    provider?: ProviderType,
+  ): Promise<PayResponse>;
 }

@@ -5,19 +5,19 @@ import {
   type VTPassConfig,
 } from "../integration/vtpass/vtpass.service";
 import { VTPassProvider } from "../providers/vtpass.provider";
-import { type BillPayCategory } from "../common/types";
+import { type BillaCategory } from "../common/types";
 import {
-  type IBillPayClient,
+  type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type SingleProviderGetPlansOptions,
-} from "./IBillPayClient";
+} from "./IBillaClient";
 
 export interface VtpassClientConfig {
   vtpass: VTPassConfig;
 }
 
-export class VtpassClient implements IBillPayClient<SingleProviderGetPlansOptions> {
+export class VtpassClient implements IBillaClient<SingleProviderGetPlansOptions> {
   private readonly service: VTPassService;
   private readonly provider: VTPassProvider;
 
@@ -36,7 +36,7 @@ export class VtpassClient implements IBillPayClient<SingleProviderGetPlansOption
     });
   }
 
-  async getCategories(): Promise<BillPayCategory[]> {
+  async getCategories(): Promise<BillaCategory[]> {
     return this.provider.listCategories();
   }
 

@@ -8,7 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [0.1.0] - 2026-03-06
 
 ### Added
-- Initial release of billpay SDK
+- Initial release of Billa SDK
 - Support for InterSwitch and VTPass payment providers
 - Automatic provider failover mechanism
 - Bill payment execution with multiple retries
@@ -20,7 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Comprehensive documentation and examples
 
 ### Features
-- `BillPayClient`: Main entry point for bill payment operations
+- `BillaClient`: Main entry point for bill payment operations
 - `getPlans()`: Fetch available billing plans from one or both providers
 - `pay()`: Execute bill payments with automatic failover
 - `validateCustomer()`: Validate customer information before payment

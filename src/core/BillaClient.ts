@@ -1,7 +1,7 @@
 import {
   Providers,
   type BillerItem,
-  type BillPayCategory,
+  type BillaCategory,
 } from "../common/types";
 import {
   InterSwitchService,
@@ -17,32 +17,32 @@ import {
 } from "../providers/bill-payment-provider.factory";
 import { validateProvider } from "../common/utils/validate-provider";
 import {
-  type IBillPayClient,
+  type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type GetPlansOptions,
-} from "./IBillPayClient";
+} from "./IBillaClient";
 import type { Customer, PayResponse } from "../common/types/payment";
 
-export interface BillPayClientConfig {
+export interface BillaClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */
   interswitch?: InterSwitchConfig;
   /** configuration for the VTPass service; omit to disable that provider */
   vtpass?: VTPassConfig;
 }
 
-export class BillPayClient implements IBillPayClient {
+export class BillaClient implements IBillaClient {
   private readonly interswitchService?: InterSwitchService;
   private readonly vtpassService?: VTPassService;
   private readonly factory: BillPaymentProviderFactory;
   private primaryProvider: ProviderType;
   private fallbackProvider: ProviderType | null;
 
-  constructor(config: BillPayClientConfig) {
+  constructor(config: BillaClientConfig) {
     // ensure at least one provider is supplied
     if (!config.interswitch && !config.vtpass) {
       throw new Error(
-        "BillPayClient requires at least one of interswitch or vtpass configuration",
+        "BillaClient requires at least one of interswitch or vtpass configuration",
       );
     }
 
@@ -233,11 +233,11 @@ export class BillPayClient implements IBillPayClient {
    */
   async getCategories(
     provider?: ProviderType | "BOTH",
-  ): Promise<BillPayCategory[]> {
+  ): Promise<BillaCategory[]> {
     const targetProvider = provider ?? this.primaryProvider;
 
     if (targetProvider === "BOTH") {
-      const results: BillPayCategory[][] = [];
+      const results: BillaCategory[][] = [];
       if (this.interswitchService) {
         results.push(
           await this.factory

@@ -1,13 +1,13 @@
-export type { BillPayClientConfig } from "./BillPayClient";
-export { BillPayClient } from "./BillPayClient";
+export type { BillaClientConfig } from "./BillaClient";
+export { BillaClient } from "./BillaClient";
 
 // single‑provider clients
 export type {
-  IBillPayClient,
+  IBillaClient,
   PayRequest,
   ValidateCustomerRequest,
   GetPlansOptions,
-} from "./IBillPayClient";
+} from "./IBillaClient";
 export type { InterswitchClientConfig } from "./InterswitchClient";
 export { InterswitchClient } from "./InterswitchClient";
 export type { VtpassClientConfig } from "./VtpassClient";

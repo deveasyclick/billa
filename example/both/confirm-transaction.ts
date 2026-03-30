@@ -1,5 +1,5 @@
 import { generateRequestId } from "../../src";
-import { billPayClient as client } from "../client";
+import { billaClient as client } from "../client";
 
 /**
  * This example demonstrates the full lifecycle of a bill payment:

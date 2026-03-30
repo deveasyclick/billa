@@ -1,4 +1,4 @@
-import { billPayClient as client } from "../client";
+import { billaClient as client } from "../client";
 
 async function main(): Promise<void> {
 

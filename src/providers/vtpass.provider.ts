@@ -1,4 +1,4 @@
-import { Providers, type BillPayCategory } from "../common";
+import { Providers, type BillaCategory } from "../common";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
 import type { BillerItem } from "../common/types/biller-item";
 import type { Customer, PayResponse } from "../common/types/payment";
@@ -82,7 +82,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     return this.vtpassService.getPlans(options);
   }
 
-  async listCategories(): Promise<BillPayCategory[]> {
+  async listCategories(): Promise<BillaCategory[]> {
     const res = await this.vtpassService.getCategories();
     return (res.content || []).map((cat) => ({
       name: cat.identifier,

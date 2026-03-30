@@ -1,5 +1,5 @@
 export type { BillerItem } from "./biller-item";
-export type { BillPayCategory } from "./category";
+export type { BillaCategory } from "./category";
 export type { PayObject, ProviderResult, Customer, PayResponse } from "./payment";
 export type {
   VTPassVariation,

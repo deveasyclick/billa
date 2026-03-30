@@ -2,26 +2,26 @@ import type { BillerItem } from "../common/types/biller-item";
 import type { InterSwitchConfig } from "../common/types/interswitch";
 import { InterSwitchService } from "../integration/interswitch/interswitch.service";
 import { InterswitchProvider } from "../providers/interswitch.provider";
-import { type BillPayCategory } from "../common/types";
+import { type BillaCategory } from "../common/types";
 import {
-  type IBillPayClient,
+  type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type SingleProviderGetPlansOptions,
-} from "./IBillPayClient";
+} from "./IBillaClient";
 import type { Customer, PayResponse } from "../common/types/payment";
 
 /**
  * Configuration for the single-provider Interswitch client.
  *
- * This type intentionally mirrors the portion of `BillPayClientConfig` that
+ * This type intentionally mirrors the portion of `BillaClientConfig` that
  * pertains to InterSwitch; we keep it separate so the public API is clearer.
  */
 export interface InterswitchClientConfig {
   interswitch: InterSwitchConfig;
 }
 
-export class InterswitchClient implements IBillPayClient<SingleProviderGetPlansOptions> {
+export class InterswitchClient implements IBillaClient<SingleProviderGetPlansOptions> {
   private readonly service: InterSwitchService;
   private readonly provider: InterswitchProvider;
 
@@ -33,7 +33,9 @@ export class InterswitchClient implements IBillPayClient<SingleProviderGetPlansO
   /**
    * Fetch available plans from InterSwitch.
    */
-  async getPlans(options?: SingleProviderGetPlansOptions): Promise<BillerItem[]> {
+  async getPlans(
+    options?: SingleProviderGetPlansOptions,
+  ): Promise<BillerItem[]> {
     const filters = options?.filters;
 
     return this.provider.listPlans({
@@ -44,7 +46,7 @@ export class InterswitchClient implements IBillPayClient<SingleProviderGetPlansO
   /**
    * Get available bill categories from InterSwitch.
    */
-  async getCategories(): Promise<BillPayCategory[]> {
+  async getCategories(): Promise<BillaCategory[]> {
     return this.provider.listCategories();
   }
 

@@ -1,6 +1,6 @@
 import { Provider } from "./index";
 
-export interface BillPayCategory {
+export interface BillaCategory {
   name: string;
   provider: Provider;
 }

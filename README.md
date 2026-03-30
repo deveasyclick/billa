@@ -1,4 +1,4 @@
-# @deveasyclick/billpay
+# @deveasyclick/billa
 
 A framework-agnostic Node.js SDK for bill payment processing with automatic provider failover in Nigeria. Supports InterSwitch and VTPass providers for airtime, data, TV, electricity, and gaming bill payments.
 
@@ -6,7 +6,7 @@ A framework-agnostic Node.js SDK for bill payment processing with automatic prov
 
 - 🔄 **Automatic Failover**: Automatically switches to fallback provider on primary failure.
 - 🏭 **Multiple Providers**: Built-in support for InterSwitch and VTPass payment providers.
-- 🎯 **Single-Provider Clients**: Instantiate `InterswitchClient` or `VtpassClient` when you only need one provider, or supply only one provider to `BillPayClient`.
+- 🎯 **Single-Provider Clients**: Instantiate `InterswitchClient` or `VtpassClient` when you only need one provider, or supply only one provider to `BillaClient`.
 - 🏷️ **Unified Categories**: Access normalized bill categories across providers using `getCategories()`.
 - 🔍 **Provider-Agnostic Abstractions**: Fetch billing plans, validate customers, and process payments uniformly, regardless of the underlying provider.
 - ✅ **Transaction Confirmation**: Verify and requery transaction status uniformly using `confirmTransaction()`.
@@ -19,11 +19,11 @@ A framework-agnostic Node.js SDK for bill payment processing with automatic prov
 ## Installation
 
 ```bash
-npm install @deveasyclick/billpay
+npm install @deveasyclick/billa
 # or
-yarn add @deveasyclick/billpay
+yarn add @deveasyclick/billa
 # or
-pnpm add @deveasyclick/billpay
+pnpm add @deveasyclick/billa
 ```
 
 ## Quick Start
@@ -31,10 +31,10 @@ pnpm add @deveasyclick/billpay
 ### 1. Initialization
 
 ```typescript
-import { BillPayClient, InterswitchClient, VtpassClient } from '@deveasyclick/billpay';
+import { BillaClient, InterswitchClient, VtpassClient } from '@deveasyclick/billa';
 
 // Full configuration with both providers
-const client = new BillPayClient({
+const client = new BillaClient({
   interswitch: {
     clientId: 'your-client-id',
     secretKey: 'your-secret-key',
@@ -114,14 +114,14 @@ console.log('Transaction Status:', confirmation);
 
 ## API Reference
 
-### `BillPayClient`
+### `BillaClient`
 
 The primary class for bill payment operations. Accepts `interswitch` and/or `vtpass` configuration. If only one is supplied, it behaves like a single-provider client and disables failover.
 
 #### Constructor
 
 ```typescript
-new BillPayClient(config: BillPayClientConfig)
+new BillaClient(config: BillaClientConfig)
 ```
 
 #### Methods
@@ -132,7 +132,7 @@ new BillPayClient(config: BillPayClientConfig)
 - `getActiveProviders()`
   Returns the current primary and fallback providers.
 
-- `getCategories(provider?: ProviderType | 'BOTH'): Promise<BillPayCategory[]>`
+- `getCategories(provider?: ProviderType | 'BOTH'): Promise<BillaCategory[]>`
   Fetches unified biller categories (e.g., Airtime, Data, Power). Removes duplicates when fetching from both providers.
 
 - `getPlans(options?: GetPlansOptions): Promise<BillerItem[]>`
@@ -149,7 +149,7 @@ new BillPayClient(config: BillPayClientConfig)
 
 ### `InterswitchClient` & `VtpassClient`
 
-Convenience wrappers around `BillPayClient` tailored for a single backend. Using them provides the same interface (`getPlans()`, `pay()`, `validateCustomer()`, `confirmTransaction()`, `getCategories()`) but ignores any attempt to override the provider parameter.
+Convenience wrappers around `BillaClient` tailored for a single backend. Using them provides the same interface (`getPlans()`, `pay()`, `validateCustomer()`, `confirmTransaction()`, `getCategories()`) but ignores any attempt to override the provider parameter.
 
 ## Supported Bill Categories
 
@@ -163,7 +163,7 @@ Convenience wrappers around `BillPayClient` tailored for a single backend. Using
 
 ## Fallback Behavior
 
-When calling `pay()` using `BillPayClient` with both providers initialized, the SDK attempts the designated primary provider first. If an error or failure occurs, it automatically falls back to the configured fallback provider.
+When calling `pay()` using `BillaClient` with both providers initialized, the SDK attempts the designated primary provider first. If an error or failure occurs, it automatically falls back to the configured fallback provider.
 
 ```typescript
 client.setProviderPreference('INTERSWITCH', 'VTPASS');
@@ -227,4 +227,4 @@ MIT
 
 ## Support
 
-For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/deveasyclick/billpay-sdk).
+For issues, questions, or contributions, please visit the [GitHub repository](https://github.com/deveasyclick/billa-sdk).
