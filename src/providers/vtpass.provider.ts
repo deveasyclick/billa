@@ -9,7 +9,7 @@ import type {
 } from "../common/types/vtpass";
 import normalizeStatus from "../common/utils/normalizeStatus";
 import type { PayRequest } from "../clients";
-import { VTPassService } from "../integrations/vtpass/vtpass.service";
+import { VTPassService } from "../integrations/vtpass";
 
 export class VTPassProvider implements IBillPaymentProvider {
   constructor(private readonly vtpassService: VTPassService) {}

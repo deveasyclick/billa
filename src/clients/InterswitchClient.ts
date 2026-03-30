@@ -1,6 +1,6 @@
 import type { BillerItem } from "../common/types/biller-item";
 import type { InterSwitchConfig } from "../common/types/interswitch";
-import { InterSwitchService } from "../integrations/interswitch/interswitch.service";
+import { InterSwitchService } from "../integrations/interswitch";
 import { InterswitchProvider } from "../providers/interswitch.provider";
 import { type BillaCategory } from "../common/types";
 import {

@@ -56,10 +56,10 @@ export { InterswitchProvider } from "./providers/interswitch.provider";
 export { VTPassProvider } from "./providers/vtpass.provider";
 
 // Integration services
-export { InterSwitchService } from "./integrations/interswitch/interswitch.service";
-export type { InterSwitchConfig } from "./integrations/interswitch/interswitch.service";
-export { VTPassService } from "./integrations/vtpass/vtpass.service";
-export type { VTPassConfig } from "./integrations/vtpass/vtpass.service";
+export { InterSwitchService } from "./integrations/interswitch";
+export type { InterSwitchConfig } from "./integrations/interswitch";
+export { VTPassService } from "./integrations/vtpass";
+export type { VTPassConfig } from "./integrations/vtpass";
 
 // utils
 export { generateRequestId } from "./common/utils/generateRequestId";

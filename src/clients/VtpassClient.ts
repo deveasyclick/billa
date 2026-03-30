@@ -1,9 +1,6 @@
 import type { BillerItem } from "../common/types/biller-item";
 import type { PayResponse, Customer } from "../common/types/payment";
-import {
-  VTPassService,
-  type VTPassConfig,
-} from "../integrations/vtpass/vtpass.service";
+import { VTPassService, type VTPassConfig } from "../integrations/vtpass";
 import { VTPassProvider } from "../providers/vtpass.provider";
 import { type BillaCategory } from "../common/types";
 import {
