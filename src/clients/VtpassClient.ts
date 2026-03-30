@@ -3,7 +3,7 @@ import type { PayResponse, Customer } from "../common/types/payment";
 import {
   VTPassService,
   type VTPassConfig,
-} from "../integration/vtpass/vtpass.service";
+} from "../integrations/vtpass/vtpass.service";
 import { VTPassProvider } from "../providers/vtpass.provider";
 import { type BillaCategory } from "../common/types";
 import {

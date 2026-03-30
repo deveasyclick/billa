@@ -3,12 +3,12 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Core client
-export { BillaClient } from "./core/BillaClient";
+export { BillaClient } from "./clients/BillaClient";
 export type {
   BillaClientConfig,
   PayRequest,
   ValidateCustomerRequest,
-} from "./core";
+} from "./clients";
 export type { IBillPaymentProvider } from "./common/interfaces/bill-payment-provider";
 
 // Common types and utilities
@@ -56,10 +56,10 @@ export { InterswitchProvider } from "./providers/interswitch.provider";
 export { VTPassProvider } from "./providers/vtpass.provider";
 
 // Integration services
-export { InterSwitchService } from "./integration/interswitch/interswitch.service";
-export type { InterSwitchConfig } from "./integration/interswitch/interswitch.service";
-export { VTPassService } from "./integration/vtpass/vtpass.service";
-export type { VTPassConfig } from "./integration/vtpass/vtpass.service";
+export { InterSwitchService } from "./integrations/interswitch/interswitch.service";
+export type { InterSwitchConfig } from "./integrations/interswitch/interswitch.service";
+export { VTPassService } from "./integrations/vtpass/vtpass.service";
+export type { VTPassConfig } from "./integrations/vtpass/vtpass.service";
 
 // utils
 export { generateRequestId } from "./common/utils/generateRequestId";

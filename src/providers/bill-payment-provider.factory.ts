@@ -1,6 +1,6 @@
 import { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
-import { InterSwitchService } from "../integration/interswitch/interswitch.service";
-import { VTPassService } from "../integration/vtpass/vtpass.service";
+import { InterSwitchService } from "../integrations/interswitch/interswitch.service";
+import { VTPassService } from "../integrations/vtpass/vtpass.service";
 import { InterswitchProvider } from "./interswitch.provider";
 import { VTPassProvider } from "./vtpass.provider";
 

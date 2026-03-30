@@ -1,4 +1,4 @@
-import { InterswitchClient } from "./core/InterswitchClient";
+import { InterswitchClient } from "./clients/InterswitchClient";
 
-export * from "./core/InterswitchClient";
+export * from "./clients/InterswitchClient";
 export default InterswitchClient;

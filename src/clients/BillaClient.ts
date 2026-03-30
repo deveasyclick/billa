@@ -6,11 +6,11 @@ import {
 import {
   InterSwitchService,
   type InterSwitchConfig,
-} from "../integration/interswitch/interswitch.service";
+} from "../integrations/interswitch/interswitch.service";
 import {
   VTPassService,
   type VTPassConfig,
-} from "../integration/vtpass/vtpass.service";
+} from "../integrations/vtpass/vtpass.service";
 import {
   BillPaymentProviderFactory,
   type ProviderType,

@@ -3,8 +3,8 @@ import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-pro
 import type { BillerItem } from "../common/types/biller-item";
 import type { Customer, PayResponse } from "../common/types/payment";
 import normalizeStatus from "../common/utils/normalizeStatus";
-import type { PayRequest } from "../core";
-import { InterSwitchService } from "../integration/interswitch/interswitch.service";
+import type { PayRequest } from "../clients";
+import { InterSwitchService } from "../integrations/interswitch/interswitch.service";
 
 export class InterswitchProvider implements IBillPaymentProvider {
   constructor(private readonly interswitchService: InterSwitchService) {}

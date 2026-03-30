@@ -1,4 +1,4 @@
-import type { InterSwitchService, VTPassService } from "../../integration";
+import type { InterSwitchService, VTPassService } from "../../integrations";
 import type { ProviderType } from "../../providers/bill-payment-provider.factory";
 
 export function validateProvider(

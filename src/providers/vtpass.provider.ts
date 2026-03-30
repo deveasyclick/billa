@@ -8,8 +8,8 @@ import type {
   VTPassTransactionResponse,
 } from "../common/types/vtpass";
 import normalizeStatus from "../common/utils/normalizeStatus";
-import type { PayRequest } from "../core";
-import { VTPassService } from "../integration/vtpass/vtpass.service";
+import type { PayRequest } from "../clients";
+import { VTPassService } from "../integrations/vtpass/vtpass.service";
 
 export class VTPassProvider implements IBillPaymentProvider {
   constructor(private readonly vtpassService: VTPassService) {}

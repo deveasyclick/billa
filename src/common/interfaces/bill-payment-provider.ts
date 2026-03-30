@@ -1,6 +1,6 @@
 import type { BillaCategory } from "../types";
 import type { BillerItem } from "../types/biller-item";
-import type { PayRequest } from "../../core";
+import type { PayRequest } from "../../clients";
 import type { Customer, PayResponse } from "../types/payment";
 
 export interface IBillPaymentProvider {

@@ -1,4 +1,4 @@
-import { VtpassClient } from "./core/VtpassClient";
+import { VtpassClient } from "./clients/VtpassClient";
 
-export * from "./core/VtpassClient";
+export * from "./clients/VtpassClient";
 export default VtpassClient;
