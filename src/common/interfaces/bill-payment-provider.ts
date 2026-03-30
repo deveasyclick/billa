@@ -1,7 +1,7 @@
-import type { BillaCategory } from "../types";
-import type { BillerItem } from "../types/biller-item";
-import type { PayRequest } from "../../clients";
-import type { Customer, PayResponse } from "../types/payment";
+import type { BillaCategory } from "../types/index.js";
+import type { BillerItem } from "../types/biller-item.js";
+import type { PayRequest } from "../../clients/index.js";
+import type { Customer, PayResponse } from "../types/payment.js";
 
 export interface IBillPaymentProvider {
   pay(payload: PayRequest): Promise<PayResponse>;

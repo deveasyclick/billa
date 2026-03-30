@@ -1,8 +1,8 @@
-import { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
-import { InterSwitchService } from "../integrations/interswitch";
-import { VTPassService } from "../integrations/vtpass";
-import { InterswitchProvider } from "./interswitch.provider";
-import { VTPassProvider } from "./vtpass.provider";
+import { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
+import { InterSwitchService } from "../integrations/interswitch/index.js";
+import { VTPassService } from "../integrations/vtpass/index.js";
+import { InterswitchProvider } from "./interswitch.provider.js";
+import { VTPassProvider } from "./vtpass.provider.js";
 
 export type ProviderType = "INTERSWITCH" | "VTPASS";
 

@@ -1,15 +1,15 @@
-import { Providers, type BillaCategory } from "../common";
-import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
-import type { BillerItem } from "../common/types/biller-item";
-import type { Customer, PayResponse } from "../common/types/payment";
+import { Providers, type BillaCategory } from "../common/index.js";
+import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
+import type { BillerItem } from "../common/types/biller-item.js";
+import type { Customer, PayResponse } from "../common/types/payment.js";
 import type {
   VTPassBillCategory,
   VTPassPayPayload,
   VTPassTransactionResponse,
-} from "../common/types/vtpass";
-import normalizeStatus from "../common/utils/normalizeStatus";
-import type { PayRequest } from "../clients";
-import { VTPassService } from "../integrations/vtpass";
+} from "../common/types/vtpass.js";
+import normalizeStatus from "../common/utils/normalizeStatus.js";
+import type { PayRequest } from "../clients/index.js";
+import { VTPassService } from "../integrations/vtpass/index.js";
 
 export class VTPassProvider implements IBillPaymentProvider {
   constructor(private readonly vtpassService: VTPassService) {}

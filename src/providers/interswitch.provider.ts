@@ -1,10 +1,10 @@
-import { Providers, type BillaCategory } from "../common";
-import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider";
-import type { BillerItem } from "../common/types/biller-item";
-import type { Customer, PayResponse } from "../common/types/payment";
-import normalizeStatus from "../common/utils/normalizeStatus";
-import type { PayRequest } from "../clients";
-import { InterSwitchService } from "../integrations/interswitch";
+import { Providers, type BillaCategory } from "../common/index.js";
+import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
+import type { BillerItem } from "../common/types/biller-item.js";
+import type { Customer, PayResponse } from "../common/types/payment.js";
+import normalizeStatus from "../common/utils/normalizeStatus.js";
+import type { PayRequest } from "../clients/index.js";
+import { InterSwitchService } from "../integrations/interswitch/index.js";
 
 export class InterswitchProvider implements IBillPaymentProvider {
   constructor(private readonly interswitchService: InterSwitchService) {}

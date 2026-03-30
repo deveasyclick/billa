@@ -1,4 +1,4 @@
-import { InterswitchClient } from "./clients/InterswitchClient";
+import { InterswitchClient } from "./clients/InterswitchClient.js";
 
-export * from "./clients/InterswitchClient";
+export * from "./clients/InterswitchClient.js";
 export default InterswitchClient;

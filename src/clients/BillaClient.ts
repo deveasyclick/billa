@@ -2,24 +2,27 @@ import {
   Providers,
   type BillerItem,
   type BillaCategory,
-} from "../common/types";
+} from "../common/types/index.js";
 import {
   InterSwitchService,
   type InterSwitchConfig,
-} from "../integrations/interswitch";
-import { VTPassService, type VTPassConfig } from "../integrations/vtpass";
+} from "../integrations/interswitch/index.js";
+import {
+  VTPassService,
+  type VTPassConfig,
+} from "../integrations/vtpass/index.js";
 import {
   BillPaymentProviderFactory,
   type ProviderType,
-} from "../providers/bill-payment-provider.factory";
-import { validateProvider } from "../common/utils/validate-provider";
+} from "../providers/bill-payment-provider.factory.js";
+import { validateProvider } from "../common/utils/validate-provider.js";
 import {
   type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type GetPlansOptions,
-} from "./IBillaClient";
-import type { Customer, PayResponse } from "../common/types/payment";
+} from "./IBillaClient.js";
+import type { Customer, PayResponse } from "../common/types/payment.js";
 
 export interface BillaClientConfig {
   /** configuration for the InterSwitch service; omit to disable that provider */

@@ -1,15 +1,15 @@
-import type { BillerItem } from "../common/types/biller-item";
-import type { InterSwitchConfig } from "../common/types/interswitch";
-import { InterSwitchService } from "../integrations/interswitch";
-import { InterswitchProvider } from "../providers/interswitch.provider";
-import { type BillaCategory } from "../common/types";
+import type { BillerItem } from "../common/types/biller-item.js";
+import type { InterSwitchConfig } from "../common/types/interswitch.js";
+import { InterSwitchService } from "../integrations/interswitch/index.js";
+import { InterswitchProvider } from "../providers/interswitch.provider.js";
+import { type BillaCategory } from "../common/types/index.js";
 import {
   type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type SingleProviderGetPlansOptions,
-} from "./IBillaClient";
-import type { Customer, PayResponse } from "../common/types/payment";
+} from "./IBillaClient.js";
+import type { Customer, PayResponse } from "../common/types/payment.js";
 
 /**
  * Configuration for the single-provider Interswitch client.

@@ -8,8 +8,8 @@ import type {
   VTPassValidateCustomerResponse,
   VTPassVerifyCustomerPayload,
   VTPassVerifyMeterNoPayload,
-} from "../../common/types/vtpass";
-import type { BillerItem } from "../../common/types/biller-item";
+} from "../../common/types/vtpass.js";
+import type { BillerItem } from "../../common/types/biller-item.js";
 import axios, { AxiosInstance } from "axios";
 
 export interface VTPassConfig {

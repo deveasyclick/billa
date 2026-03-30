@@ -1,6 +1,11 @@
-export type { BillerItem } from "./biller-item";
-export type { BillaCategory } from "./category";
-export type { PayObject, ProviderResult, Customer, PayResponse } from "./payment";
+export type { BillerItem } from "./biller-item.js";
+export type { BillaCategory } from "./category.js";
+export type {
+  PayObject,
+  ProviderResult,
+  Customer,
+  PayResponse,
+} from "./payment.js";
 export type {
   VTPassVariation,
   GetVTPassVariationsResponse,
@@ -20,7 +25,7 @@ export type {
   VTPassBuyElectricityPayload,
   PayWithVtPassPayload,
   VTPassPayPayload,
-} from "./vtpass";
+} from "./vtpass.js";
 
 export type {
   Category,
@@ -31,10 +36,9 @@ export type {
   PaymentItem,
   PaymentItemsResponse,
   ValidateCustomersResponse,
-
   TransactionResponse,
   ConfirmTransactionResponse,
-} from "./interswitch";
+} from "./interswitch.js";
 
 export const Providers = {
   INTERSWITCH: "INTERSWITCH",

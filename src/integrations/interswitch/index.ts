@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
-import type { PayObject } from "../../common/types/payment";
-export type { InterSwitchConfig } from "../../common/types/interswitch";
+import type { PayObject } from "../../common/types/payment.js";
+export type { InterSwitchConfig } from "../../common/types/interswitch.js";
 import type {
   Biller,
   BillerCategoriesResponse,
@@ -13,8 +13,8 @@ import type {
   PaymentItemsResponse,
   TransactionResponse,
   ValidateCustomersResponse,
-} from "../../common/types/interswitch";
-import type { BillerItem } from "../../common/types/biller-item";
+} from "../../common/types/interswitch.js";
+import type { BillerItem } from "../../common/types/biller-item.js";
 
 type InterswitchTokenResp = {
   access_token: string;

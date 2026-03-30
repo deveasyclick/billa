@@ -1,5 +1,5 @@
-export type { BillaClientConfig } from "./BillaClient";
-export { BillaClient } from "./BillaClient";
+export type { BillaClientConfig } from "./BillaClient.js";
+export { BillaClient } from "./BillaClient.js";
 
 // single‑provider clients
 export type {
@@ -7,8 +7,8 @@ export type {
   PayRequest,
   ValidateCustomerRequest,
   GetPlansOptions,
-} from "./IBillaClient";
-export type { InterswitchClientConfig } from "./InterswitchClient";
-export { InterswitchClient } from "./InterswitchClient";
-export type { VtpassClientConfig } from "./VtpassClient";
-export { VtpassClient } from "./VtpassClient";
+} from "./IBillaClient.js";
+export type { InterswitchClientConfig } from "./InterswitchClient.js";
+export { InterswitchClient } from "./InterswitchClient.js";
+export type { VtpassClientConfig } from "./VtpassClient.js";
+export { VtpassClient } from "./VtpassClient.js";

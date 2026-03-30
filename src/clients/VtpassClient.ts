@@ -1,14 +1,17 @@
-import type { BillerItem } from "../common/types/biller-item";
-import type { PayResponse, Customer } from "../common/types/payment";
-import { VTPassService, type VTPassConfig } from "../integrations/vtpass";
-import { VTPassProvider } from "../providers/vtpass.provider";
-import { type BillaCategory } from "../common/types";
+import type { BillerItem } from "../common/types/biller-item.js";
+import type { PayResponse, Customer } from "../common/types/payment.js";
+import {
+  VTPassService,
+  type VTPassConfig,
+} from "../integrations/vtpass/index.js";
+import { VTPassProvider } from "../providers/vtpass.provider.js";
+import { type BillaCategory } from "../common/types/index.js";
 import {
   type IBillaClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type SingleProviderGetPlansOptions,
-} from "./IBillaClient";
+} from "./IBillaClient.js";
 
 export interface VtpassClientConfig {
   vtpass: VTPassConfig;
