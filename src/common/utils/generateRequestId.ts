@@ -21,7 +21,7 @@ export function generateRequestId(suffixLength: number = 10): string {
   const chars =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   let randomSuffix = "";
-  for (let i = 0; i < 10; i++) {
+  for (let i = 0; i < suffixLength; i++) {
     randomSuffix += chars.charAt(Math.floor(Math.random() * chars.length));
   }
 
