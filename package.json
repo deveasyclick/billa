@@ -2,8 +2,31 @@
   "name": "billa",
   "version": "0.1.0",
   "description": "Framework-agnostic Node.js SDK for bill payment processing with automatic provider failover",
-  "main": "dist/index.js",
-  "types": "dist/index.d.ts",
+  "keywords": [
+    "billa",
+    "payment",
+    "interswitch",
+    "vtpass",
+    "airtime",
+    "data",
+    "electricity",
+    "tv",
+    "gaming",
+    "Nigeria",
+    "failover",
+    "bill"
+  ],
+  "homepage": "https://github.com/deveasyclick/billa#readme",
+  "bugs": {
+    "url": "https://github.com/deveasyclick/billa/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/deveasyclick/billa.git"
+  },
+  "license": "MIT",
+  "author": "deveasyclick",
+  "type": "module",
   "exports": {
     ".": {
       "import": "./dist/index.js",
@@ -21,6 +44,12 @@
       "types": "./dist/vtpass.d.ts"
     }
   },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "directories": {
+    "example": "example",
+    "test": "tests"
+  },
   "files": [
     "dist",
     "LICENSE",
@@ -34,30 +63,6 @@
     "lint": "eslint src --ext .ts",
     "type-check": "tsc --noEmit"
   },
-  "keywords": [
-    "billa",
-    "payment",
-    "interswitch",
-    "vtpass",
-    "airtime",
-    "data",
-    "electricity",
-    "tv",
-    "gaming",
-    "Nigeria",
-    "failover",
-    "bill"
-  ],
-  "author": "deveasyclick",
-  "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/deveasyclick/billa-sdk.git"
-  },
-  "bugs": {
-    "url": "https://github.com/deveasyclick/billa-sdk/issues"
-  },
-  "homepage": "https://github.com/deveasyclick/billa-sdk#readme",
   "dependencies": {
     "axios": "^1.6.0",
     "dotenv": "^17.3.1"
