@@ -1,0 +1,24 @@
+# Source code (not needed if you publish dist)
+src/
+
+# Tests
+tests/
+
+# Examples / demos
+example/
+
+# Config files
+tsconfig.json
+eslint.config.mjs
+
+# Lock files (not needed for libraries)
+pnpm-lock.yaml
+
+# Node modules
+node_modules/
+
+# Misc
+*.log
+.DS_Store
+
+.env
