@@ -55,12 +55,6 @@ export type { ProviderType } from "./providers/bill-payment-provider.factory";
 export { InterswitchProvider } from "./providers/interswitch.provider";
 export { VTPassProvider } from "./providers/vtpass.provider";
 
-// single-provider clients
-export type { InterswitchClientConfig } from "./core/InterswitchClient";
-export { InterswitchClient } from "./core/InterswitchClient";
-export type { VtpassClientConfig } from "./core/VtpassClient";
-export { VtpassClient } from "./core/VtpassClient";
-
 // Integration services
 export { InterSwitchService } from "./integration/interswitch/interswitch.service";
 export type { InterSwitchConfig } from "./integration/interswitch/interswitch.service";

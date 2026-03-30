@@ -1,14 +1,24 @@
 {
-  "name": "@deveasyclick/billa",
+  "name": "billa",
   "version": "0.1.0",
   "description": "Framework-agnostic Node.js SDK for bill payment processing with automatic provider failover",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "exports": {
     ".": {
-      "import": "./dist/index.mjs",
+      "import": "./dist/index.js",
       "require": "./dist/index.js",
       "types": "./dist/index.d.ts"
+    },
+    "./interswitch": {
+      "import": "./dist/interswitch.js",
+      "require": "./dist/interswitch.js",
+      "types": "./dist/interswitch.d.ts"
+    },
+    "./vtpass": {
+      "import": "./dist/vtpass.js",
+      "require": "./dist/vtpass.js",
+      "types": "./dist/vtpass.d.ts"
     }
   },
   "files": [

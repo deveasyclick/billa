@@ -1,4 +1,4 @@
-# @deveasyclick/billa
+# billa
 
 A framework-agnostic Node.js SDK for bill payment processing with automatic provider failover in Nigeria. Supports InterSwitch and VTPass providers for airtime, data, TV, electricity, and gaming bill payments.
 
@@ -19,11 +19,11 @@ A framework-agnostic Node.js SDK for bill payment processing with automatic prov
 ## Installation
 
 ```bash
-npm install @deveasyclick/billa
+npm install billa
 # or
-yarn add @deveasyclick/billa
+yarn add billa
 # or
-pnpm add @deveasyclick/billa
+pnpm add billa
 ```
 
 ## Quick Start
@@ -31,7 +31,9 @@ pnpm add @deveasyclick/billa
 ### 1. Initialization
 
 ```typescript
-import { BillaClient, InterswitchClient, VtpassClient } from '@deveasyclick/billa';
+import { BillaClient } from 'billa';
+import InterswitchClient from 'billa/interswitch';
+import VtpassClient from 'billa/vtpass';
 
 // Full configuration with both providers
 const client = new BillaClient({
@@ -59,6 +61,9 @@ client.setProviderPreference('INTERSWITCH', 'VTPASS');
 If you only use one provider, you can initialize a single-provider client cleanly:
 
 ```typescript
+import InterswitchClient from 'billa/interswitch';
+import VtpassClient from 'billa/vtpass';
+
 // InterSwitch only
 const interswitchClient = new InterswitchClient({
   interswitch: { /* config */ }
