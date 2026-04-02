@@ -107,7 +107,7 @@ export class BillpayClient implements IBillpayClient {
   /**
    * Pay a bill with automatic fallback to secondary provider on failure
    */
-  async pay(request: PayRequest): Promise<PayResponse> {
+  async payWithFailover(request: PayRequest): Promise<PayResponse> {
     // determine which provider(s) we will attempt
     const providerOverride = request.provider;
     const providersToTry: ProviderType[] = [];
@@ -132,6 +132,26 @@ export class BillpayClient implements IBillpayClient {
     return this.tryProviders(providersToTry, request);
   }
 
+  /**
+   * Pay without failover
+   */
+  async pay(request: PayRequest): Promise<PayResponse> {
+    const provider = request.provider ?? this.primaryProvider;
+    try {
+      const providerInstance = this.factory.getProvider(provider);
+      const result = await providerInstance.pay(request);
+
+      // Success! Return immediately
+      return result;
+    } catch (err: unknown) {
+      const errorMessage =
+        (err as { response?: { data?: unknown } })?.response?.data ||
+        (err as Error)?.message ||
+        err;
+      console.warn(`Payment via ${provider} failed:`, errorMessage);
+      throw errorMessage;
+    }
+  }
   /**
    * Validate customer information
    */
