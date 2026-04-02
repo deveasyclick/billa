@@ -1,5 +1,5 @@
 import * as dotenv from "dotenv";
-import { BillaClient } from "../src";
+import { BillpayClient } from "../src";
 import { InterswitchClient } from "../src/interswitch";
 import { VtpassClient } from "../src/vtpass";
 
@@ -34,7 +34,7 @@ export const vtpassClient = new VtpassClient({
   vtpass: vtpassConfig,
 });
 
-export const billaClient = new BillaClient({
+export const billpayClient = new BillpayClient({
   interswitch: interswitchConfig,
   vtpass: vtpassConfig,
 });

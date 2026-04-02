@@ -2,26 +2,26 @@ import type { BillerItem } from "../common/types/biller-item.js";
 import type { InterSwitchConfig } from "../common/types/interswitch.js";
 import { InterSwitchService } from "../integrations/interswitch/index.js";
 import { InterswitchProvider } from "../providers/interswitch.provider.js";
-import { type BillaCategory } from "../common/types/index.js";
+import { type BillpayCategory } from "../common/types/index.js";
 import {
-  type IBillaClient,
+  type IBillpayClient,
   type PayRequest,
   type ValidateCustomerRequest,
   type SingleProviderGetPlansOptions,
-} from "./IBillaClient.js";
+} from "./IBillpayClient.js";
 import type { Customer, PayResponse } from "../common/types/payment.js";
 
 /**
  * Configuration for the single-provider Interswitch client.
  *
- * This type intentionally mirrors the portion of `BillaClientConfig` that
+ * This type intentionally mirrors the portion of `BillpayClientConfig` that
  * pertains to InterSwitch; we keep it separate so the public API is clearer.
  */
 export interface InterswitchClientConfig {
   interswitch: InterSwitchConfig;
 }
 
-export class InterswitchClient implements IBillaClient<SingleProviderGetPlansOptions> {
+export class InterswitchClient implements IBillpayClient<SingleProviderGetPlansOptions> {
   private readonly service: InterSwitchService;
   private readonly provider: InterswitchProvider;
 
@@ -46,7 +46,7 @@ export class InterswitchClient implements IBillaClient<SingleProviderGetPlansOpt
   /**
    * Get available bill categories from InterSwitch.
    */
-  async getCategories(): Promise<BillaCategory[]> {
+  async getCategories(): Promise<BillpayCategory[]> {
     return this.provider.listCategories();
   }
 

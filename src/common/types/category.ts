@@ -1,6 +1,6 @@
 import { Provider } from "./index.js";
 
-export interface BillaCategory {
+export interface BillpayCategory {
   name: string;
   provider: Provider;
 }

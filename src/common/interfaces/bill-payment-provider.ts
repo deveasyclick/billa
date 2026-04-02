@@ -1,4 +1,4 @@
-import type { BillaCategory } from "../types/index.js";
+import type { BillpayCategory } from "../types/index.js";
 import type { BillerItem } from "../types/biller-item.js";
 import type { PayRequest } from "../../clients/index.js";
 import type { Customer, PayResponse } from "../types/payment.js";
@@ -24,7 +24,7 @@ export interface IBillPaymentProvider {
    * Retrieve biller categories exposed by the provider.  Filters and caching
    * behaviour are passed through to the underlying service.
    */
-  listCategories(): Promise<BillaCategory[]>;
+  listCategories(): Promise<BillpayCategory[]>;
 
   /**
    * Confirm/Requery a transaction.

@@ -1,7 +1,6 @@
-import { billaClient as client } from "../client";
+import { billpayClient as client } from "../client";
 
 async function main(): Promise<void> {
-
   // You can set provider preferences (e.g., Primary: INTERSWITCH, Fallback: VTPASS)
   client.setProviderPreference("INTERSWITCH", "VTPASS");
   console.log(

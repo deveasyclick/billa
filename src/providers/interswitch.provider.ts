@@ -1,4 +1,4 @@
-import { Providers, type BillaCategory } from "../common/index.js";
+import { Providers, type BillpayCategory } from "../common/index.js";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
 import type { BillerItem } from "../common/types/biller-item.js";
 import type { Customer, PayResponse } from "../common/types/payment.js";
@@ -31,7 +31,7 @@ export class InterswitchProvider implements IBillPaymentProvider {
     return this.interswitchService.getPlans(options);
   }
 
-  async listCategories(): Promise<BillaCategory[]> {
+  async listCategories(): Promise<BillpayCategory[]> {
     const res = await this.interswitchService.getBillerCategories();
     return (res.BillerCategories || []).map((cat) => ({
       name: cat.Name,

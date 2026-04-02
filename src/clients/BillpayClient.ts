@@ -21,7 +21,7 @@ import {
   type PayRequest,
   type ValidateCustomerRequest,
   type GetPlansOptions,
-} from "./IBillaClient.js";
+} from "./IBillpayClient.js";
 import type { Customer, PayResponse } from "../common/types/payment.js";
 
 export interface BillpayClientConfig {
@@ -233,11 +233,11 @@ export class BillpayClient implements IBillpayClient {
    */
   async getCategories(
     provider?: ProviderType | "BOTH",
-  ): Promise<BillaCategory[]> {
+  ): Promise<BillpayCategory[]> {
     const targetProvider = provider ?? this.primaryProvider;
 
     if (targetProvider === "BOTH") {
-      const results: BillaCategory[][] = [];
+      const results: BillpayCategory[][] = [];
       if (this.interswitchService) {
         results.push(
           await this.factory

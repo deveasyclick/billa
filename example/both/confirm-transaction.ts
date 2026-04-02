@@ -1,5 +1,5 @@
 import { generateRequestId } from "../../src";
-import { billaClient as client } from "../client";
+import { billpayClient as client } from "../client";
 
 /**
  * This example demonstrates the full lifecycle of a bill payment:
@@ -9,7 +9,6 @@ import { billaClient as client } from "../client";
  * 4. Confirming the transaction status using confirmTransaction
  */
 async function main(): Promise<void> {
-
   try {
     console.log("\n[1] Fetching plans...");
     const plans = await client.getPlans({

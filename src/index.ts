@@ -3,9 +3,9 @@ import dotenv from "dotenv";
 dotenv.config();
 
 // Core client
-export { BillaClient } from "./clients/BillaClient.js";
+export { BillpayClient } from "./clients/BillpayClient.js";
 export type {
-  BillaClientConfig,
+  BillpayClientConfig,
   PayRequest,
   ValidateCustomerRequest,
 } from "./clients/index.js";
@@ -16,7 +16,7 @@ export type {
   BillerItem,
   PayObject,
   ProviderResult,
-  BillaCategory,
+  BillpayCategory,
   VTPassVariation,
   GetVTPassVariationsResponse,
   VTPassCategory,

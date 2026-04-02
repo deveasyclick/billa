@@ -1,9 +1,9 @@
 {
-  "name": "billa",
+  "name": "billpay",
   "version": "0.1.0",
   "description": "Framework-agnostic Node.js SDK for bill payment processing with automatic provider failover",
   "keywords": [
-    "billa",
+    "billpay",
     "payment",
     "interswitch",
     "vtpass",
@@ -16,13 +16,13 @@
     "failover",
     "bill"
   ],
-  "homepage": "https://github.com/deveasyclick/billa#readme",
+  "homepage": "https://github.com/deveasyclick/billpay#readme",
   "bugs": {
-    "url": "https://github.com/deveasyclick/billa/issues"
+    "url": "https://github.com/deveasyclick/billpay/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/deveasyclick/billa.git"
+    "url": "git+https://github.com/deveasyclick/billpay.git"
   },
   "license": "MIT",
   "author": "deveasyclick",

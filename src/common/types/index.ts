@@ -1,5 +1,5 @@
 export type { BillerItem } from "./biller-item.js";
-export type { BillaCategory } from "./category.js";
+export type { BillpayCategory } from "./category.js";
 export type {
   PayObject,
   ProviderResult,
