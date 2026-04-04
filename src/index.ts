@@ -50,10 +50,10 @@ export type {
 } from "./common/types/index.js";
 
 // Provider implementations
-export { BillPaymentProviderFactory } from "./providers/bill-payment-provider.factory.js";
-export type { ProviderType } from "./providers/bill-payment-provider.factory.js";
-export { InterswitchProvider } from "./providers/interswitch.provider.js";
-export { VTPassProvider } from "./providers/vtpass.provider.js";
+export { BillPaymentProviderFactory } from "./providers/factory.js";
+export type { ProviderType } from "./providers/factory.js";
+export { InterswitchProvider } from "./providers/interswitch/index.js";
+export { VTPassProvider } from "./providers/vtpass/index.js";
 
 // Integration services
 export { InterSwitchService } from "./integrations/interswitch/index.js";

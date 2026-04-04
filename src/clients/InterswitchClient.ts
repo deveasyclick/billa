@@ -1,7 +1,7 @@
 import type { BillerItem } from "../common/types/biller-item.js";
 import type { InterSwitchConfig } from "../common/types/interswitch.js";
 import { InterSwitchService } from "../integrations/interswitch/index.js";
-import { InterswitchProvider } from "../providers/interswitch.provider.js";
+import { InterswitchProvider } from "../providers/interswitch/index.js";
 import { type BillpayCategory } from "../common/types/index.js";
 import {
   type IBillpayClient,

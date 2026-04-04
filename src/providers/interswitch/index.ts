@@ -1,15 +1,15 @@
-import { Providers, type BillpayCategory } from "../common/index.js";
-import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
-import type { BillerItem } from "../common/types/biller-item.js";
-import type { Customer, PayResponse } from "../common/types/payment.js";
-import normalizeStatus from "../common/utils/normalizeStatus.js";
-import type { PayRequest } from "../clients/index.js";
-import { InterSwitchService } from "../integrations/interswitch/index.js";
+import { Providers, type BillpayCategory } from "../../common/index.js";
+import type { IBillPaymentProvider } from "../../common/interfaces/bill-payment-provider.js";
+import type { BillerItem } from "../../common/types/biller-item.js";
+import type { Customer, PayResponse } from "../../common/types/payment.js";
+import normalizeStatus from "../../common/utils/normalizeStatus.js";
+import type { PayRequest } from "../../clients/index.js";
+import { InterSwitchService } from "../../integrations/interswitch/index.js";
 import type {
   Category,
   Biller,
   PaymentItem,
-} from "../common/types/interswitch.js";
+} from "../../common/types/interswitch.js";
 
 type MappedBiller = {
   id: number;

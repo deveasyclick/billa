@@ -11,9 +11,9 @@ import {
   BillPaymentProviderFactory,
   type ProviderType,
   type ProviderTarget,
-} from "../providers/bill-payment-provider.factory.js";
-import { InterswitchProvider } from "../providers/interswitch.provider.js";
-import { VTPassProvider } from "../providers/vtpass.provider.js";
+} from "../providers/factory.js";
+import { InterswitchProvider } from "../providers/interswitch/index.js";
+import { VTPassProvider } from "../providers/vtpass/index.js";
 import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
 import {
   type IBillpayClient,

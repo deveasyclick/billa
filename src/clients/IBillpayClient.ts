@@ -4,7 +4,7 @@ import type { VTPassBillCategory } from "../common/types/vtpass.js";
 import {
   type ProviderType,
   type ProviderTarget,
-} from "../providers/bill-payment-provider.factory.js";
+} from "../providers/factory.js";
 
 /**
  * Common request structure for a bill payment

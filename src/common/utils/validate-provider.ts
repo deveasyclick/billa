@@ -2,7 +2,7 @@ import type {
   InterSwitchService,
   VTPassService,
 } from "../../integrations/index.js";
-import type { ProviderType } from "../../providers/bill-payment-provider.factory.js";
+import type { ProviderType } from "../../providers/factory.js";
 
 export function validateProvider(
   provider: ProviderType,

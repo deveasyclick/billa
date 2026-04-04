@@ -1,7 +1,7 @@
 import type { BillerItem, BillpayCategory } from "../common/types/index.js";
 import type { Customer, PayResponse } from "../common/types/payment.js";
 import type { VTPassBillCategory } from "../common/types/vtpass.js";
-import { type ProviderType } from "../providers/bill-payment-provider.factory.js";
+import { type ProviderType } from "../providers/factory.js";
 
 /**
  * Common request structure for a bill payment

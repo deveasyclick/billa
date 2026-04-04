@@ -4,7 +4,7 @@ import {
   VTPassService,
   type VTPassConfig,
 } from "../integrations/vtpass/index.js";
-import { VTPassProvider } from "../providers/vtpass.provider.js";
+import { VTPassProvider } from "../providers/vtpass/index.js";
 import { type BillpayCategory } from "../common/types/index.js";
 import {
   type IBillpayClient,
