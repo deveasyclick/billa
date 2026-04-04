@@ -5,6 +5,7 @@ import type { Customer, PayResponse } from "../../common/types/payment.js";
 import type {
   VTPassBillCategory,
   VTPassPayPayload,
+  VTPassService,
   VTPassTransactionResponse,
 } from "../../common/types/vtpass.js";
 import normalizeStatus from "../../common/utils/normalizeStatus.js";
@@ -12,7 +13,7 @@ import type { PayRequest } from "../../clients/index.js";
 import { VTPassApiClient } from "../../integrations/vtpass/index.js";
 
 export class VTPassProvider implements IBillPaymentProvider {
-  constructor(private readonly vtpassService: VTPassApiClient) {}
+  constructor(private readonly vtpassApiClient: VTPassApiClient) {}
 
   private buildVtpassPayload({
     reference,
@@ -39,7 +40,7 @@ export class VTPassProvider implements IBillPaymentProvider {
           serviceID: biller,
           phone: customerId,
           variation_code: paymentCode,
-          billersCode: this.vtpassService.config.phone,
+          billersCode: this.vtpassApiClient.config.phone,
           amount: amount,
         };
 
@@ -47,7 +48,7 @@ export class VTPassProvider implements IBillPaymentProvider {
         return {
           request_id: reference,
           serviceID: biller,
-          phone: this.vtpassService.config.phone,
+          phone: this.vtpassApiClient.config.phone,
           variation_code: paymentCode,
           billersCode: customerId,
           subscription_type: type ?? "change",
@@ -58,7 +59,7 @@ export class VTPassProvider implements IBillPaymentProvider {
         return {
           request_id: reference,
           serviceID: biller,
-          phone: this.vtpassService.config.phone,
+          phone: this.vtpassApiClient.config.phone,
           variation_code: paymentCode,
           billersCode: customerId,
           amount: amount,
@@ -72,7 +73,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   async pay(payload: PayRequest): Promise<PayResponse> {
     const vtpassPayload: VTPassPayPayload = this.buildVtpassPayload(payload);
 
-    const tx = await this.vtpassService.pay(vtpassPayload);
+    const tx = await this.vtpassApiClient.pay(vtpassPayload);
     return this.mapTransactionToPayResponse(payload.reference, tx);
   }
 
@@ -83,7 +84,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   }
 
   async listCategories(): Promise<BillpayCategory[]> {
-    const res = await this.vtpassService.getCategories();
+    const res = await this.vtpassApiClient.getCategories();
     return (res.content || []).map((cat) => ({
       name: cat.identifier,
       provider: Providers.VTPASS,
@@ -95,7 +96,7 @@ export class VTPassProvider implements IBillPaymentProvider {
     paymentCode: string,
     type?: string,
   ): Promise<Customer> {
-    const response = await this.vtpassService.validateCustomer({
+    const response = await this.vtpassApiClient.validateCustomer({
       billersCode: customerId,
       serviceID: paymentCode,
       ...(type && { type }),
@@ -109,7 +110,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   }
 
   async confirm(reference: string): Promise<PayResponse> {
-    const tx = await this.vtpassService.getTransaction(reference);
+    const tx = await this.vtpassApiClient.getTransaction(reference);
 
     return this.mapTransactionToPayResponse(reference, tx);
   }
@@ -135,122 +136,111 @@ export class VTPassProvider implements IBillPaymentProvider {
    * Internal builder that constructs plans by querying VTpass endpoints.
    * Optionally applies filters afterwards.
    */
+
   private async fetchPlans(
     filters?: Record<string, string[]>,
   ): Promise<BillerItem[]> {
-    if (filters && Object.keys(filters).length === 0) {
-      return [];
-    }
-    const plans: BillerItem[] = [];
-    // retrieve categories from VTpass and iterate
-    const categoriesResp = await this.vtpassService.getCategories();
-    for (const cat of categoriesResp.content) {
-      const category = cat.identifier.toUpperCase();
+    if (filters && Object.keys(filters).length === 0) return [];
 
-      if (filters && !(category in filters)) continue;
-      const billers = filters?.[category];
+    const categoriesResp = await this.vtpassApiClient.getCategories();
 
-      const allowAllBillers = !billers || billers.length === 0;
+    const relevantCategories = categoriesResp.content.filter((cat) => {
+      if (!filters) return true;
+      return cat.identifier.toUpperCase() in filters;
+    });
 
-      const normalizedBillers = billers?.map((b) => b.toLowerCase());
-
-      const servicesResp = await this.vtpassService.getServices(cat.identifier);
-      for (const svc of servicesResp.content) {
-        if (!allowAllBillers) {
-          const name = svc.name.toLowerCase();
-          const id = svc.serviceID.toLowerCase();
-
-          if (
-            !normalizedBillers!.includes(name) &&
-            !normalizedBillers!.includes(id)
-          ) {
-            continue;
-          }
-        }
-
-        if (category === "ELECTRICITY-BILL") {
-          plans.push(
-            {
-              category,
-              billerName: svc.name,
-              provider: "VTPASS",
-              billerId: svc.serviceID,
-              paymentCode: "prepaid",
-              name: svc.name,
-              amount: 0,
-              amountType: 0,
-              active: true,
-              image: svc.image,
-            },
-            {
-              category,
-              billerName: svc.name,
-              provider: "VTPASS",
-              billerId: svc.serviceID,
-              paymentCode: "postpaid",
-              name: svc.name,
-              amount: 0,
-              amountType: 0,
-              active: true,
-              image: svc.image,
-            },
-          );
-
-          continue;
-        }
-
-        // if product_type is flexible, it means it has variations
-        if (svc.product_type === "flexible") {
-          plans.push({
-            category,
-            billerName: svc.name,
-            provider: "VTPASS",
-            billerId: svc.serviceID,
-            paymentCode: svc.serviceID,
-            name: svc.name,
-            amount: 0,
-            amountType: 0,
-            active: true,
-            image: svc.image,
-          });
-          continue;
-        }
-
-        const variants = await this.vtpassService.getServiceVariants(
-          svc.serviceID,
+    // Fetch all services in parallel
+    const categoryServices = await Promise.allSettled(
+      relevantCategories.map(async (cat) => {
+        const servicesResp = await this.vtpassApiClient.getServices(
+          cat.identifier,
         );
-        if (variants && variants.length > 0) {
-          for (const variant of variants) {
-            plans.push({
-              category,
-              billerName: svc.name,
-              provider: "VTPASS",
-              billerId: svc.serviceID,
-              paymentCode: variant.variation_code,
-              name: variant.name,
-              amount: Number(variant.variation_amount),
-              amountType: 0,
-              active: true,
-              image: svc.image,
-            });
-          }
-        } else {
-          plans.push({
-            category,
-            billerName: svc.name,
-            provider: "VTPASS",
-            billerId: svc.serviceID,
-            paymentCode: svc.serviceID,
-            name: svc.name,
-            amount: 0,
-            amountType: 0,
-            active: true,
-            image: svc.image,
-          });
-        }
-      }
+        return { cat, services: servicesResp.content };
+      }),
+    );
+
+    const serviceEntries = categoryServices
+      .filter((r) => r.status === "fulfilled")
+      .flatMap((r) => {
+        const { cat, services } = (r as PromiseFulfilledResult<any>).value;
+        const category = cat.identifier.toUpperCase();
+        const allowedBillers = filters?.[category];
+        return this.filterServices(services, allowedBillers).map((svc) => ({
+          category,
+          svc,
+        }));
+      });
+
+    // Expand each service into plan(s), fetching variants in parallel
+    const planGroups = await Promise.allSettled(
+      serviceEntries.map(({ category, svc }) =>
+        this.expandServiceToPlans(category, svc),
+      ),
+    );
+
+    return planGroups
+      .filter((r) => r.status === "fulfilled")
+      .flatMap((r) => (r as PromiseFulfilledResult<BillerItem[]>).value);
+  }
+
+  private filterServices(
+    services: VTPassService[],
+    allowedBillers?: string[],
+  ): VTPassService[] {
+    if (!allowedBillers || allowedBillers.length === 0) return services;
+
+    const normalized = new Set(allowedBillers.map((b) => b.toLowerCase()));
+    return services.filter(
+      (svc) =>
+        normalized.has(svc.name.toLowerCase()) ||
+        normalized.has(svc.serviceID.toLowerCase()),
+    );
+  }
+
+  private async expandServiceToPlans(
+    category: string,
+    svc: VTPassService,
+  ): Promise<BillerItem[]> {
+    const base = this.makeBasePlan(category, svc);
+
+    if (category === "ELECTRICITY-BILL") {
+      return [
+        { ...base, paymentCode: "prepaid" },
+        { ...base, paymentCode: "postpaid" },
+      ];
     }
 
-    return plans;
+    if (svc.product_type === "flexible") {
+      return [base];
+    }
+
+    const variants = await this.vtpassApiClient.getServiceVariants(
+      svc.serviceID,
+    );
+    if (variants && variants.length > 0) {
+      return variants.map((variant) => ({
+        ...base,
+        paymentCode: variant.variation_code,
+        name: variant.name,
+        amount: Number(variant.variation_amount),
+      }));
+    }
+
+    return [base];
+  }
+
+  private makeBasePlan(category: string, svc: VTPassService): BillerItem {
+    return {
+      category,
+      billerName: svc.name,
+      provider: "VTPASS",
+      billerId: svc.serviceID,
+      paymentCode: svc.serviceID,
+      name: svc.name,
+      amount: 0,
+      amountType: 0,
+      active: true,
+      image: svc.image,
+    };
   }
 }

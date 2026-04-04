@@ -41,7 +41,7 @@ export interface GetVTPassCategoryResponse {
   content: VTPassCategory[];
 }
 
-export interface VTPassApiClient {
+export interface VTPassService {
   serviceID: string; // e.g airtel-data
   name: string; // e.g "Airtel Data"
   minimium_amount: string; // e.g "1"
@@ -53,7 +53,7 @@ export interface VTPassApiClient {
 
 export interface GetVTPassServiceResponse {
   response_description: string;
-  content: VTPassApiClient[];
+  content: VTPassService[];
 }
 
 export interface VTPassTransaction {
