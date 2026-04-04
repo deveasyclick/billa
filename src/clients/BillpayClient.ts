@@ -1,8 +1,4 @@
-import {
-  Providers,
-  type BillerItem,
-  type BillpayCategory,
-} from "../common/types/index.js";
+import type { BillerItem, BillpayCategory } from "../common/types/index.js";
 import {
   InterSwitchService,
   type InterSwitchConfig,
@@ -14,8 +10,11 @@ import {
 import {
   BillPaymentProviderFactory,
   type ProviderType,
+  type ProviderTarget,
 } from "../providers/bill-payment-provider.factory.js";
-import { validateProvider } from "../common/utils/validate-provider.js";
+import { InterswitchProvider } from "../providers/interswitch.provider.js";
+import { VTPassProvider } from "../providers/vtpass.provider.js";
+import type { IBillPaymentProvider } from "../common/interfaces/bill-payment-provider.js";
 import {
   type IBillpayClient,
   type PayRequest,
@@ -53,10 +52,16 @@ export class BillpayClient implements IBillpayClient {
       this.vtpassService = new VTPassService(config.vtpass);
     }
 
-    this.factory = new BillPaymentProviderFactory(
-      this.interswitchService,
-      this.vtpassService,
-    );
+    this.factory = new BillPaymentProviderFactory();
+    if (this.interswitchService) {
+      this.factory.register(
+        "INTERSWITCH",
+        new InterswitchProvider(this.interswitchService),
+      );
+    }
+    if (this.vtpassService) {
+      this.factory.register("VTPASS", new VTPassProvider(this.vtpassService));
+    }
 
     // default provider preference: first available provider becomes primary
     if (this.interswitchService) {
@@ -76,15 +81,10 @@ export class BillpayClient implements IBillpayClient {
     primary: ProviderType,
     fallback?: ProviderType | null,
   ): void {
-    const services = {
-      interswitch: this.interswitchService,
-      vtpass: this.vtpassService,
-    };
-
-    // validate requested providers are configured
-    validateProvider(primary, services);
+    // The factory will throw if provider is not configured
+    this.factory.getProvider(primary);
     if (fallback) {
-      validateProvider(fallback, services);
+      this.factory.getProvider(fallback);
     }
 
     this.primaryProvider = primary;
@@ -105,6 +105,32 @@ export class BillpayClient implements IBillpayClient {
   }
 
   /**
+   * Generic method to handle provider routing for read operations that support "BOTH"
+   */
+  private async forProvider<T>(
+    target: ProviderTarget,
+    fn: (provider: IBillPaymentProvider) => Promise<T[]>,
+  ): Promise<T[]> {
+    if (target === "BOTH") {
+      const results = await Promise.all(
+        this.availableProviders().map((p) => fn(this.factory.getProvider(p))),
+      );
+      return results.flat();
+    }
+    return fn(this.factory.getProvider(target));
+  }
+
+  /**
+   * Get available providers that are configured
+   */
+  private availableProviders(): ProviderType[] {
+    const providers: ProviderType[] = [];
+    if (this.interswitchService) providers.push("INTERSWITCH");
+    if (this.vtpassService) providers.push("VTPASS");
+    return providers;
+  }
+
+  /**
    * Pay a bill with automatic fallback to secondary provider on failure
    */
   async payWithFailover(request: PayRequest): Promise<PayResponse> {
@@ -113,11 +139,6 @@ export class BillpayClient implements IBillpayClient {
     const providersToTry: ProviderType[] = [];
 
     if (providerOverride) {
-      // ensure override is available
-      validateProvider(providerOverride, {
-        interswitch: this.interswitchService,
-        vtpass: this.vtpassService,
-      });
       providersToTry.push(providerOverride);
     } else {
       providersToTry.push(this.primaryProvider);
@@ -157,13 +178,6 @@ export class BillpayClient implements IBillpayClient {
    */
   async validateCustomer(request: ValidateCustomerRequest): Promise<Customer> {
     const provider = request.provider ?? this.primaryProvider;
-
-    // ensure provider is configured
-    validateProvider(provider, {
-      interswitch: this.interswitchService,
-      vtpass: this.vtpassService,
-    });
-
     const providerInstance = this.factory.getProvider(provider);
     return providerInstance.validateCustomer(
       request.customerId,
@@ -177,38 +191,22 @@ export class BillpayClient implements IBillpayClient {
    */
   async getPlans(options?: GetPlansOptions): Promise<BillerItem[]> {
     const { provider, filters } = options || {};
-
     const targetProvider = provider ?? this.primaryProvider;
 
     if (targetProvider === "BOTH") {
-      const results: BillerItem[][] = [];
-      if (this.interswitchService) {
-        results.push(
-          await this.factory.getProvider(Providers.INTERSWITCH).listPlans({
-            filters: filters?.interswitch,
+      const results = await Promise.all(
+        this.availableProviders().map((p) =>
+          this.factory.getProvider(p).listPlans({
+            filters:
+              p === "INTERSWITCH" ? filters?.interswitch : filters?.vtpass,
           }),
-        );
-      }
-      if (this.vtpassService) {
-        results.push(
-          await this.factory.getProvider(Providers.VTPASS).listPlans({
-            filters: filters?.vtpass,
-          }),
-        );
-      }
+        ),
+      );
       return results.flat();
     }
 
-    if (targetProvider === "INTERSWITCH") {
-      validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      return this.factory.getProvider(Providers.INTERSWITCH).listPlans({
-        filters: filters?.interswitch,
-      });
-    }
-
-    validateProvider("VTPASS", { vtpass: this.vtpassService });
-    return this.factory.getProvider(Providers.VTPASS).listPlans({
-      filters: filters?.vtpass,
+    return this.factory.getProvider(targetProvider).listPlans({
+      filters: filters?.interswitch || filters?.vtpass,
     });
   }
 
@@ -251,45 +249,20 @@ export class BillpayClient implements IBillpayClient {
    * If provider is specified, returns categories from that provider only.
    * If provider is 'BOTH', returns combined unique categories from both providers.
    */
-  async getCategories(
-    provider?: ProviderType | "BOTH",
-  ): Promise<BillpayCategory[]> {
+  async getCategories(provider?: ProviderTarget): Promise<BillpayCategory[]> {
     const targetProvider = provider ?? this.primaryProvider;
 
-    if (targetProvider === "BOTH") {
-      const results: BillpayCategory[][] = [];
-      if (this.interswitchService) {
-        results.push(
-          await this.factory
-            .getProvider(Providers.INTERSWITCH)
-            .listCategories(),
-        );
-      }
+    const results = await this.forProvider(targetProvider, (p) =>
+      p.listCategories(),
+    );
 
-      if (this.vtpassService) {
-        results.push(
-          await this.factory.getProvider(Providers.VTPASS).listCategories(),
-        );
-      }
-
-      const allCategories = results.flat();
-      // Remove duplicates by ID
-      const seen = new Set<string>();
-      return allCategories.filter((cat) => {
-        if (seen.has(cat.name)) return false;
-        seen.add(cat.name);
-        return true;
-      });
-    }
-
-    if (targetProvider === "INTERSWITCH") {
-      validateProvider("INTERSWITCH", { interswitch: this.interswitchService });
-      return this.factory.getProvider(Providers.INTERSWITCH).listCategories();
-    }
-
-    // VTPASS path
-    validateProvider("VTPASS", { vtpass: this.vtpassService });
-    return this.factory.getProvider(Providers.VTPASS).listCategories();
+    // Deduplicate categories by name
+    const seen = new Set<string>();
+    return results.filter((cat) => {
+      if (seen.has(cat.name)) return false;
+      seen.add(cat.name);
+      return true;
+    });
   }
 
   /**
@@ -300,12 +273,6 @@ export class BillpayClient implements IBillpayClient {
     provider?: ProviderType,
   ): Promise<PayResponse> {
     const targetProvider = provider ?? this.primaryProvider;
-
-    validateProvider(targetProvider, {
-      interswitch: this.interswitchService,
-      vtpass: this.vtpassService,
-    });
-
     const providerInstance = this.factory.getProvider(targetProvider);
     return providerInstance.confirm(reference);
   }

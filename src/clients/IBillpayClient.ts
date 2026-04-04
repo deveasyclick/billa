@@ -1,7 +1,10 @@
 import type { BillerItem, BillpayCategory } from "../common/types/index.js";
 import type { Customer, PayResponse } from "../common/types/payment.js";
 import type { VTPassBillCategory } from "../common/types/vtpass.js";
-import { type ProviderType } from "../providers/bill-payment-provider.factory.js";
+import {
+  type ProviderType,
+  type ProviderTarget,
+} from "../providers/bill-payment-provider.factory.js";
 
 /**
  * Common request structure for a bill payment
@@ -31,7 +34,7 @@ export interface ValidateCustomerRequest {
  * Options for fetching available plans
  */
 export interface GetPlansOptions {
-  provider?: ProviderType | "BOTH";
+  provider?: ProviderTarget;
   filters?: {
     interswitch?: Record<string, string[]>;
     vtpass?: Record<string, string[]>;
@@ -54,7 +57,7 @@ export interface IBillpayClient<TGetPlansOptions = GetPlansOptions> {
   /**
    * Get available biller categories from the provider.
    */
-  getCategories(): Promise<BillpayCategory[]>;
+  getCategories(provider?: ProviderTarget): Promise<BillpayCategory[]>;
 
   /**
    * Execute a payment.
