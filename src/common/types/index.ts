@@ -11,7 +11,7 @@ export type {
   GetVTPassVariationsResponse,
   VTPassCategory,
   GetVTPassCategoryResponse,
-  VTPassService,
+  VTPassApiClient,
   GetVTPassServiceResponse,
   VTPassTransaction,
   VTPassTransactionResponse,

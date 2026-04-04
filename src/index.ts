@@ -21,7 +21,7 @@ export type {
   GetVTPassVariationsResponse,
   VTPassCategory,
   GetVTPassCategoryResponse,
-  VTPassService as VTPassServiceType,
+  VTPassApiClient as VTPassServiceType,
   GetVTPassServiceResponse,
   VTPassTransaction,
   VTPassTransactionResponse,
@@ -56,9 +56,9 @@ export { InterswitchProvider } from "./providers/interswitch/index.js";
 export { VTPassProvider } from "./providers/vtpass/index.js";
 
 // Integration services
-export { InterSwitchService } from "./integrations/interswitch/index.js";
+export { InterSwitchApiClient } from "./integrations/interswitch/index.js";
 export type { InterSwitchConfig } from "./integrations/interswitch/index.js";
-export { VTPassService } from "./integrations/vtpass/index.js";
+export { VTPassApiClient } from "./integrations/vtpass/index.js";
 export type { VTPassConfig } from "./integrations/vtpass/index.js";
 
 // utils

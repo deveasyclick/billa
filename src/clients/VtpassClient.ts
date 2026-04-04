@@ -1,7 +1,7 @@
 import type { BillerItem } from "../common/types/biller-item.js";
 import type { PayResponse, Customer } from "../common/types/payment.js";
 import {
-  VTPassService,
+  VTPassApiClient,
   type VTPassConfig,
 } from "../integrations/vtpass/index.js";
 import { VTPassProvider } from "../providers/vtpass/index.js";
@@ -18,11 +18,11 @@ export interface VtpassClientConfig {
 }
 
 export class VtpassClient implements IBillpayClient<SingleProviderGetPlansOptions> {
-  private readonly service: VTPassService;
+  private readonly service: VTPassApiClient;
   private readonly provider: VTPassProvider;
 
   constructor(config: VtpassClientConfig) {
-    this.service = new VTPassService(config.vtpass);
+    this.service = new VTPassApiClient(config.vtpass);
     this.provider = new VTPassProvider(this.service);
   }
 

@@ -9,10 +9,10 @@ import type {
 } from "../../common/types/vtpass.js";
 import normalizeStatus from "../../common/utils/normalizeStatus.js";
 import type { PayRequest } from "../../clients/index.js";
-import { VTPassService } from "../../integrations/vtpass/index.js";
+import { VTPassApiClient } from "../../integrations/vtpass/index.js";
 
 export class VTPassProvider implements IBillPaymentProvider {
-  constructor(private readonly vtpassService: VTPassService) {}
+  constructor(private readonly vtpassService: VTPassApiClient) {}
 
   private buildVtpassPayload({
     reference,

@@ -19,7 +19,7 @@ export interface VTPassConfig {
   phone: string;
 }
 
-export class VTPassService {
+export class VTPassApiClient {
   private readonly httpClient: AxiosInstance;
 
   constructor(

@@ -4,7 +4,7 @@ import type { BillerItem } from "../../common/types/biller-item.js";
 import type { Customer, PayResponse } from "../../common/types/payment.js";
 import normalizeStatus from "../../common/utils/normalizeStatus.js";
 import type { PayRequest } from "../../clients/index.js";
-import { InterSwitchService } from "../../integrations/interswitch/index.js";
+import { InterSwitchApiClient } from "../../integrations/interswitch/index.js";
 import type {
   Category,
   Biller,
@@ -19,7 +19,7 @@ type MappedBiller = {
 };
 
 export class InterswitchProvider implements IBillPaymentProvider {
-  constructor(private readonly interswitchService: InterSwitchService) {}
+  constructor(private readonly interswitchService: InterSwitchApiClient) {}
 
   async pay(payload: PayRequest): Promise<PayResponse> {
     const resp = await this.interswitchService.pay({

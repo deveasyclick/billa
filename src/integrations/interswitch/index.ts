@@ -23,7 +23,7 @@ type ValidateCustomerRequest = {
   customerId: string;
 };
 
-export class InterSwitchService {
+export class InterSwitchApiClient {
   private readonly baseUrl: string;
   private readonly httpClient: AxiosInstance;
 

@@ -1,12 +1,12 @@
 import type {
-  InterSwitchService,
-  VTPassService,
+  InterSwitchApiClient,
+  VTPassApiClient,
 } from "../../integrations/index.js";
 import type { ProviderType } from "../../providers/factory.js";
 
 export function validateProvider(
   provider: ProviderType,
-  services: { interswitch?: InterSwitchService; vtpass?: VTPassService },
+  services: { interswitch?: InterSwitchApiClient; vtpass?: VTPassApiClient },
 ): void {
   if (provider === "INTERSWITCH" && !services.interswitch) {
     throw new Error("INTERSWITCH provider is not configured");

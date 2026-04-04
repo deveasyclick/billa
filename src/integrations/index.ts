@@ -1,5 +1,5 @@
 export {
-  InterSwitchService,
+  InterSwitchApiClient,
   type InterSwitchConfig,
 } from "./interswitch/index.js";
-export { VTPassService, type VTPassConfig } from "./vtpass/index.js";
+export { VTPassApiClient, type VTPassConfig } from "./vtpass/index.js";

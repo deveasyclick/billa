@@ -1,10 +1,10 @@
 import type { BillerItem, BillpayCategory } from "../common/types/index.js";
 import {
-  InterSwitchService,
+  InterSwitchApiClient,
   type InterSwitchConfig,
 } from "../integrations/interswitch/index.js";
 import {
-  VTPassService,
+  VTPassApiClient,
   type VTPassConfig,
 } from "../integrations/vtpass/index.js";
 import {
@@ -31,8 +31,8 @@ export interface BillpayClientConfig {
 }
 
 export class BillpayClient implements IBillpayClient {
-  private readonly interswitchService?: InterSwitchService;
-  private readonly vtpassService?: VTPassService;
+  private readonly interswitchService?: InterSwitchApiClient;
+  private readonly vtpassService?: VTPassApiClient;
   private readonly factory: BillPaymentProviderFactory;
   private primaryProvider: ProviderType;
   private fallbackProvider: ProviderType | null;
@@ -46,10 +46,10 @@ export class BillpayClient implements IBillpayClient {
     }
 
     if (config.interswitch) {
-      this.interswitchService = new InterSwitchService(config.interswitch);
+      this.interswitchService = new InterSwitchApiClient(config.interswitch);
     }
     if (config.vtpass) {
-      this.vtpassService = new VTPassService(config.vtpass);
+      this.vtpassService = new VTPassApiClient(config.vtpass);
     }
 
     this.factory = new BillPaymentProviderFactory();

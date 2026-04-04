@@ -1,6 +1,6 @@
 import type { BillerItem } from "../common/types/biller-item.js";
 import type { InterSwitchConfig } from "../common/types/interswitch.js";
-import { InterSwitchService } from "../integrations/interswitch/index.js";
+import { InterSwitchApiClient } from "../integrations/interswitch/index.js";
 import { InterswitchProvider } from "../providers/interswitch/index.js";
 import { type BillpayCategory } from "../common/types/index.js";
 import {
@@ -22,11 +22,11 @@ export interface InterswitchClientConfig {
 }
 
 export class InterswitchClient implements IBillpayClient<SingleProviderGetPlansOptions> {
-  private readonly service: InterSwitchService;
+  private readonly service: InterSwitchApiClient;
   private readonly provider: InterswitchProvider;
 
   constructor(config: InterswitchClientConfig) {
-    this.service = new InterSwitchService(config.interswitch);
+    this.service = new InterSwitchApiClient(config.interswitch);
     this.provider = new InterswitchProvider(this.service);
   }
 
