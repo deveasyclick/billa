@@ -79,7 +79,7 @@ export class VTPassProvider implements IBillPaymentProvider {
   async listPlans(options?: {
     filters?: Record<string, string[]>;
   }): Promise<BillerItem[]> {
-    return this.vtpassService.getPlans(options);
+    return this.fetchPlans(options?.filters);
   }
 
   async listCategories(): Promise<BillpayCategory[]> {
@@ -129,5 +129,128 @@ export class VTPassProvider implements IBillPaymentProvider {
         token: tx.Token ?? tx.token,
       },
     };
+  }
+
+  /**
+   * Internal builder that constructs plans by querying VTpass endpoints.
+   * Optionally applies filters afterwards.
+   */
+  private async fetchPlans(
+    filters?: Record<string, string[]>,
+  ): Promise<BillerItem[]> {
+    if (filters && Object.keys(filters).length === 0) {
+      return [];
+    }
+    const plans: BillerItem[] = [];
+    // retrieve categories from VTpass and iterate
+    const categoriesResp = await this.vtpassService.getCategories();
+    for (const cat of categoriesResp.content) {
+      const category = cat.identifier.toUpperCase();
+
+      if (filters && !(category in filters)) continue;
+      const billers = filters?.[category];
+
+      const allowAllBillers = !billers || billers.length === 0;
+
+      const normalizedBillers = billers?.map((b) => b.toLowerCase());
+
+      const servicesResp = await this.vtpassService.getServices(cat.identifier);
+      for (const svc of servicesResp.content) {
+        if (!allowAllBillers) {
+          const name = svc.name.toLowerCase();
+          const id = svc.serviceID.toLowerCase();
+
+          if (
+            !normalizedBillers!.includes(name) &&
+            !normalizedBillers!.includes(id)
+          ) {
+            continue;
+          }
+        }
+
+        if (category === "ELECTRICITY-BILL") {
+          plans.push(
+            {
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: "prepaid",
+              name: svc.name,
+              amount: 0,
+              amountType: 0,
+              active: true,
+              image: svc.image,
+            },
+            {
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: "postpaid",
+              name: svc.name,
+              amount: 0,
+              amountType: 0,
+              active: true,
+              image: svc.image,
+            },
+          );
+
+          continue;
+        }
+
+        // if product_type is flexible, it means it has variations
+        if (svc.product_type === "flexible") {
+          plans.push({
+            category,
+            billerName: svc.name,
+            provider: "VTPASS",
+            billerId: svc.serviceID,
+            paymentCode: svc.serviceID,
+            name: svc.name,
+            amount: 0,
+            amountType: 0,
+            active: true,
+            image: svc.image,
+          });
+          continue;
+        }
+
+        const variants = await this.vtpassService.getServiceVariants(
+          svc.serviceID,
+        );
+        if (variants && variants.length > 0) {
+          for (const variant of variants) {
+            plans.push({
+              category,
+              billerName: svc.name,
+              provider: "VTPASS",
+              billerId: svc.serviceID,
+              paymentCode: variant.variation_code,
+              name: variant.name,
+              amount: Number(variant.variation_amount),
+              amountType: 0,
+              active: true,
+              image: svc.image,
+            });
+          }
+        } else {
+          plans.push({
+            category,
+            billerName: svc.name,
+            provider: "VTPASS",
+            billerId: svc.serviceID,
+            paymentCode: svc.serviceID,
+            name: svc.name,
+            amount: 0,
+            amountType: 0,
+            active: true,
+            image: svc.image,
+          });
+        }
+      }
+    }
+
+    return plans;
   }
 }
